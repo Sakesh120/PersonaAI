@@ -1,0 +1,1 @@
+{"name":"@local-ai/desktop","private":true,"main":"electron/main.js","scripts":{"start":"electron electron/main.js"},"devDependencies":{"electron":"^33.2.1"}}

@@ -1,0 +1,2 @@
+# Development
+Use Node 20+. Copy `.env.example` to `.env`, install from the repository root, then run `npm run dev` for the API and browser renderer. To launch the desktop shell against the Vite dev server, run `npm run dev:electron`. For a packaged-style local launch, run `npm run start:desktop` (it builds the renderer first). Run `npm run build` and `npm test`. Ollama is optional during development; configure `OLLAMA_BASE_URL` and `OLLAMA_MODEL` when available.
