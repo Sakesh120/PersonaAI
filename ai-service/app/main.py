@@ -5,6 +5,8 @@ from pydantic import BaseModel, Field
 
 from app.config.settings import settings
 
+from app.services.ollama_client import ask_ollama
+
 app = FastAPI(title="PersonaAI AI Service", version="0.1.0")
 
 
@@ -41,10 +43,7 @@ async def chat(request: ChatRequest) -> ChatResponse:
     if not request.message.strip():
         raise ValueError("message is required")
 
-    answer = (
-        "PersonaAI is running in starter mode. Connect Ollama to enable a real local model response. "
-        f"Received: {request.message[:240]}"
-    )
+    answer = ask_ollama(request.message)    
 
     return ChatResponse(
         response=answer,
