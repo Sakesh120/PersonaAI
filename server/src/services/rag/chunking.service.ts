@@ -1,0 +1,1 @@
+export class ChunkingService { chunk(text:string,size=900,overlap=100){const out:string[]=[];for(let i=0;i<text.length;i+=size-overlap){out.push(text.slice(i,i+size));if(i+size>=text.length)break;}return out;} }

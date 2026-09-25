@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+body {
+	margin: 0;
+	transition: background-color 300ms ease, color 300ms ease;
+}
+
+.laptop-float {
+	perspective: 700px;
+	transform-style: preserve-3d;
+	animation: laptop-float 3.2s ease-in-out infinite;
+}
+
+.laptop-screen {
+	transform: rotateX(4deg) rotateY(-5deg);
+	transform-origin: bottom center;
+	transform-style: preserve-3d;
+}
+
+.laptop-base {
+	transform: perspective(300px) rotateX(58deg) rotateY(-5deg);
+	transform-origin: top center;
+}
+
+@keyframes laptop-float {
+	0%,
+	100% {
+		transform: translateY(0) rotateZ(-1deg);
+	}
+	50% {
+		transform: translateY(-10px) rotateZ(1deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.laptop-float {
+		animation: none;
+	}
+}
