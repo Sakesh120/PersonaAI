@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 from app.config.settings import settings
 
-from app.services.ollama_client import ask_ollama
+from app.services.ollama_client import ask_ollama, check_ollama
 
 app = FastAPI(title="PersonaAI AI Service", version="0.1.0")
 
@@ -26,14 +26,13 @@ class ChatResponse(BaseModel):
 
 @app.get("/api/health")
 async def health() -> dict:
+    ollama = check_ollama()
+
     return {
         "ok": True,
         "status": "healthy",
         "service": "ai-service",
-        "ollama": {
-            "available": False,
-            "message": "Ollama is not running; configure OLLAMA_BASE_URL and start the local service to enable generation."
-        },
+        "ollama": ollama,
         "model": settings.ollama_model,
     }
 
