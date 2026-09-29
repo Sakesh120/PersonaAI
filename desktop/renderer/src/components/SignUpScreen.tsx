@@ -4,9 +4,10 @@ import PersonaLogo from "./PersonaLogo"
 
 interface SignUpScreenProps {
   onLogin: () => void
+  onHome: () => void
 }
 
-function SignUpScreen({ onLogin }: SignUpScreenProps) {
+function SignUpScreen({ onLogin, onHome }: SignUpScreenProps) {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -43,25 +44,26 @@ function SignUpScreen({ onLogin }: SignUpScreenProps) {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0B1020] px-6 py-10 text-white">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0B1220] px-6 py-10 text-slate-50">
 
-      {/* Background Glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_15%,rgba(79,70,229,0.20),transparent_35%),radial-gradient(circle_at_15%_80%,rgba(37,99,235,0.14),transparent_30%),radial-gradient(circle_at_85%_70%,rgba(168,85,247,0.14),transparent_30%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.10),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(37,99,235,0.08),transparent_28%)]" />
 
-      {/* Background Grid */}
-      <div className="absolute inset-0 opacity-[0.025] bg-[linear-gradient(rgba(255,255,255,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.5)_1px,transparent_1px)] bg-[size:45px_45px]" />
+      <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,0.4)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.4)_1px,transparent_1px)] bg-[size:46px_46px]" />
 
-      {/* Ambient Lights */}
-      <div className="absolute left-[12%] top-[20%] h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
+      <button
+        type="button"
+        onClick={onHome}
+        aria-label="Go back to Home"
+        className="group absolute left-6 top-6 z-20 flex items-center gap-2 rounded-full border border-[#263449] bg-[#111827]/80 px-5 py-2.5 text-sm font-medium text-slate-300 transition hover:border-sky-400/30 hover:bg-[#162033] hover:text-white"
+      >
+        <span className="text-lg leading-none transition-transform duration-200 group-hover:-translate-x-1">
+          ←
+        </span>
 
-      <div className="absolute right-[14%] top-[24%] h-3 w-3 rounded-full bg-purple-400 animate-pulse" />
+        Back
+      </button>
 
-      <div className="absolute bottom-[18%] left-[18%] h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
-
-      <div className="absolute bottom-[22%] right-[18%] h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
-
-      {/* Signup Card */}
-      <div className="relative z-10 w-full max-w-md rounded-3xl border border-white/10 bg-[#11182B]/95 p-8 shadow-[0_0_60px_rgba(59,130,246,0.16)] backdrop-blur-xl">
+      <div className="relative z-10 w-full max-w-md rounded-3xl border border-[#263449] bg-[#111827]/95 p-8 shadow-[0_18px_45px_rgba(15,23,42,0.38)] backdrop-blur-xl">
 
         {/* Top Glow */}
         <div className="absolute left-1/2 top-0 h-px w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-blue-400/70 to-transparent" />
@@ -76,7 +78,7 @@ function SignUpScreen({ onLogin }: SignUpScreenProps) {
           Create Your Account
         </h1>
 
-        <p className="mt-2 text-center text-sm leading-6 text-[#B8C0CC]">
+        <p className="mt-2 text-center text-sm leading-6 text-slate-300">
           Join PersonaAI and start your smarter journey.
         </p>
 
@@ -189,7 +191,7 @@ function SignUpScreen({ onLogin }: SignUpScreenProps) {
           {/* Create Account */}
           <button
             type="submit"
-            className="group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 py-3.5 font-semibold text-white shadow-[0_0_25px_rgba(99,102,241,0.30)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_35px_rgba(99,102,241,0.45)] active:translate-y-0"
+            className="group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#2563EB] py-3.5 font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.22)] transition-all duration-200 hover:bg-[#1D4ED8] active:translate-y-0"
           >
             <span>Create Account</span>
 
@@ -207,7 +209,7 @@ function SignUpScreen({ onLogin }: SignUpScreenProps) {
           <button
             type="button"
             onClick={onLogin}
-            className="font-semibold text-blue-400 transition hover:text-purple-400"
+            className="font-semibold text-sky-400 transition hover:text-sky-300"
           >
             Login
           </button>

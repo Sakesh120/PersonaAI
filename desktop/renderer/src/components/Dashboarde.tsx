@@ -14,18 +14,15 @@ function Dashboard({
   onOpenTasks,
 }: DashboardProps) {
   return (
-    <main className="min-h-screen bg-[#0B1020] text-white">
+    <main className="min-h-screen bg-[#0B1220] text-slate-50">
 
-      {/* ================= BACKGROUND ================= */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute left-[20%] top-[-10%] h-96 w-96 rounded-full bg-blue-600/10 blur-[130px]" />
-        <div className="absolute right-[-5%] top-[30%] h-96 w-96 rounded-full bg-purple-600/10 blur-[130px]" />
+        <div className="absolute left-[20%] top-[-10%] h-96 w-96 rounded-full bg-sky-500/8 blur-[130px]" />
+        <div className="absolute right-[-5%] top-[30%] h-96 w-96 rounded-full bg-indigo-500/8 blur-[130px]" />
         <div className="absolute bottom-[-10%] left-[35%] h-96 w-96 rounded-full bg-cyan-500/5 blur-[130px]" />
       </div>
 
-
-      {/* ================= SIDEBAR ================= */}
-      <aside className="fixed left-0 top-0 z-30 flex h-screen w-64 flex-col border-r border-white/10 bg-[#0D1426]/95 p-5 backdrop-blur-xl">
+      <aside className="fixed left-0 top-0 z-30 flex h-screen w-64 flex-col border-r border-[#263449] bg-[#111827]/95 p-5 backdrop-blur-xl">
 
         {/* Logo */}
         <div className="flex items-center gap-3">
@@ -49,7 +46,7 @@ function Dashboard({
           {/* Home */}
           <button
             type="button"
-            className="flex w-full items-center gap-3 rounded-xl bg-gradient-to-r from-blue-500/15 to-purple-500/10 px-4 py-3 text-left text-blue-300 shadow-[inset_0_0_20px_rgba(59,130,246,0.03)]"
+            className="flex w-full items-center gap-3 rounded-xl border border-sky-500/20 bg-[#162033] px-4 py-3 text-left text-sky-300 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.04)]"
           >
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10 text-lg">
               ⌂
@@ -65,7 +62,7 @@ function Dashboard({
           <button
             type="button"
             onClick={onOpenChat}
-            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-gray-400 transition duration-200 hover:bg-white/5 hover:text-white"
+            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-slate-400 transition duration-200 hover:bg-[#162033] hover:text-white"
           >
             <span className="flex h-7 w-7 items-center justify-center rounded-lg text-lg transition group-hover:bg-blue-500/10">
               ◉
@@ -81,7 +78,7 @@ function Dashboard({
           <button
             type="button"
             onClick={onOpenFiles}
-            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-gray-400 transition duration-200 hover:bg-white/5 hover:text-white"
+            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-slate-400 transition duration-200 hover:bg-[#162033] hover:text-white"
           >
             <span className="flex h-7 w-7 items-center justify-center rounded-lg text-lg transition group-hover:bg-purple-500/10">
               ▣
@@ -97,7 +94,7 @@ function Dashboard({
           <button
             type="button"
             onClick={onOpenTasks}
-            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-gray-400 transition duration-200 hover:bg-white/5 hover:text-white"
+            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-slate-400 transition duration-200 hover:bg-[#162033] hover:text-white"
           >
             <span className="flex h-7 w-7 items-center justify-center rounded-lg text-lg transition group-hover:bg-cyan-500/10">
               ✓
@@ -113,7 +110,7 @@ function Dashboard({
           <button
             type="button"
             onClick={onOpenSettings}
-            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-gray-400 transition duration-200 hover:bg-white/5 hover:text-white"
+            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-slate-400 transition duration-200 hover:bg-[#162033] hover:text-white"
           >
             <span className="flex h-7 w-7 items-center justify-center rounded-lg text-lg transition group-hover:bg-purple-500/10">
               ⚙
@@ -128,7 +125,7 @@ function Dashboard({
 
 
         {/* Sidebar Bottom */}
-        <div className="mt-auto border-t border-white/10 pt-5">
+        <div className="mt-auto border-t border-[#263449] pt-5">
 
           <div className="flex items-center gap-3 rounded-xl p-2">
 
@@ -196,7 +193,7 @@ function Dashboard({
 
 
         {/* ================= HERO ================= */}
-        <div className="relative mt-8 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#121D38] via-[#11182B] to-[#17132F] p-8 shadow-[0_0_60px_rgba(59,130,246,0.08)]">
+        <div className="relative mt-8 overflow-hidden rounded-3xl border border-[#263449] bg-gradient-to-br from-[#111827] via-[#111827] to-[#162033] p-8 shadow-[0_15px_35px_rgba(15,23,42,0.22)]">
 
           {/* Decorative Glow */}
           <div className="pointer-events-none absolute right-[-80px] top-[-100px] h-72 w-72 rounded-full bg-blue-500/10 blur-[100px]" />
@@ -287,7 +284,7 @@ function Dashboard({
           <button
             type="button"
             onClick={onOpenChat}
-            className="group rounded-2xl border border-white/10 bg-[#11182B] p-5 text-left transition duration-200 hover:-translate-y-1 hover:border-blue-400/30 hover:bg-[#141E35]"
+            className="group rounded-2xl border border-[#263449] bg-[#111827] p-5 text-left transition duration-200 hover:-translate-y-1 hover:border-sky-400/30 hover:bg-[#162033]"
           >
             <div className="flex items-center justify-between">
 
@@ -315,7 +312,7 @@ function Dashboard({
           <button
             type="button"
             onClick={onOpenFiles}
-            className="group rounded-2xl border border-white/10 bg-[#11182B] p-5 text-left transition duration-200 hover:-translate-y-1 hover:border-purple-400/30 hover:bg-[#15172F]"
+            className="group rounded-2xl border border-[#263449] bg-[#111827] p-5 text-left transition duration-200 hover:-translate-y-1 hover:border-indigo-400/30 hover:bg-[#162033]"
           >
             <div className="flex items-center justify-between">
 
@@ -393,7 +390,7 @@ function Dashboard({
             <button
               type="button"
               onClick={onOpenChat}
-              className="group rounded-2xl border border-white/10 bg-[#11182B] p-6 text-left transition duration-300 hover:-translate-y-1 hover:border-blue-500/40"
+              className="group rounded-2xl border border-[#263449] bg-[#111827] p-6 text-left transition duration-300 hover:-translate-y-1 hover:border-sky-400/40"
             >
 
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-2xl">
@@ -419,7 +416,7 @@ function Dashboard({
             <button
               type="button"
               onClick={onOpenChat}
-              className="group rounded-2xl border border-white/10 bg-[#11182B] p-6 text-left transition duration-300 hover:-translate-y-1 hover:border-purple-500/40"
+              className="group rounded-2xl border border-[#263449] bg-[#111827] p-6 text-left transition duration-300 hover:-translate-y-1 hover:border-indigo-400/40"
             >
 
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10 text-2xl">
@@ -445,7 +442,7 @@ function Dashboard({
             <button
               type="button"
               onClick={onOpenChat}
-              className="group rounded-2xl border border-white/10 bg-[#11182B] p-6 text-left transition duration-300 hover:-translate-y-1 hover:border-cyan-500/40"
+              className="group rounded-2xl border border-[#263449] bg-[#111827] p-6 text-left transition duration-300 hover:-translate-y-1 hover:border-cyan-400/40"
             >
 
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/10 text-2xl">

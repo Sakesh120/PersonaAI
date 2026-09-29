@@ -1,67 +1,147 @@
-type PersonaLogoProps = {
-  size?: "sm" | "md" | "lg" | "xl"
+type PersonaLogoSize = number | "sm" | "md" | "lg" | "xl"
+
+const sizeMap = {
+  sm: 36,
+  md: 44,
+  lg: 96,
+  xl: 160,
+} as const
+
+function PersonaLogo({
+  size = 220,
+  className = "",
+}: {
+  size?: PersonaLogoSize
   className?: string
-}
+}) {
+  const dimension = typeof size === "number" ? size : sizeMap[size]
 
-const sizeClasses = {
-  sm: "h-9 w-9",
-  md: "h-11 w-11",
-  lg: "h-24 w-24",
-  xl: "h-40 w-40",
-}
-
-function PersonaLogo({ size = "md", className = "" }: PersonaLogoProps) {
   return (
-    <div
-      aria-label="PersonaAI logo"
-      className={`shrink-0 ${sizeClasses[size]} ${className}`}
+    <svg
+      width={dimension}
+      height={dimension}
+      viewBox="0 0 500 500"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      role="img"
+      aria-label="PersonaAI human neural network shield logo"
     >
-      <svg viewBox="0 0 100 100" role="img" className="h-full w-full">
-        <defs>
-          <linearGradient id="persona-logo-gradient" x1="15" y1="18" x2="88" y2="82" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#D32BD8" />
-            <stop offset="0.42" stopColor="#7C43E5" />
-            <stop offset="1" stopColor="#14BCEB" />
-          </linearGradient>
-          <linearGradient id="persona-logo-edge" x1="20" y1="14" x2="85" y2="88" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#F064E7" />
-            <stop offset="0.5" stopColor="#7967FF" />
-            <stop offset="1" stopColor="#52E7FF" />
-          </linearGradient>
-          <filter id="persona-logo-glow" x="-35%" y="-35%" width="170%" height="170%">
-            <feGaussianBlur stdDeviation="2.5" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          <clipPath id="persona-logo-p-clip">
-            <path d="M27 84V16h31c17 0 28 9 28 24s-11 24-28 24H43v20H27Zm16-35h14c8 0 13-3 13-9s-5-9-13-9H43v18Z" />
-          </clipPath>
-        </defs>
+      <defs>
+        {/* Shield Gradient */}
+        <linearGradient
+          id="shieldGradient"
+          x1="70"
+          y1="100"
+          x2="430"
+          y2="420"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#00BFFF" />
+          <stop offset="0.5" stopColor="#1877F2" />
+          <stop offset="1" stopColor="#7B2CFF" />
+        </linearGradient>
 
-        <path
-          d="M27 84V16h31c17 0 28 9 28 24s-11 24-28 24H43v20H27Zm16-35h14c8 0 13-3 13-9s-5-9-13-9H43v18Z"
-          fill="url(#persona-logo-gradient)"
-          stroke="url(#persona-logo-edge)"
-          strokeWidth="2.5"
-          strokeLinejoin="round"
-          filter="url(#persona-logo-glow)"
-        />
-        <g clipPath="url(#persona-logo-p-clip)" fill="none" stroke="#6CEAFF" strokeWidth="1.2" opacity="0.8">
-          <path d="M17 25h20v8h17m-35 0h11v9h28m-38 8h19v-8h21m-39 18h28v-9h18M18 74h22v-9h23M45 14v18m8-18v23m9-22v13m8-8v15M47 59v29m8-31v22m9-27v28m8-36v31" />
-          <path d="M18 25h-6m17 17H19m29 17H35m32-35h13M45 14V8m19 8V9m9 23h9M47 88v6m17-7v8m11-38h9" />
-        </g>
-        <g fill="#7EEBFF" filter="url(#persona-logo-glow)">
-          <circle cx="37" cy="25" r="1.8" />
-          <circle cx="55" cy="33" r="1.8" />
-          <circle cx="72" cy="42" r="1.8" />
-          <circle cx="38" cy="58" r="1.8" />
-          <circle cx="62" cy="68" r="1.8" />
-          <circle cx="73" cy="77" r="1.8" />
-        </g>
-      </svg>
-    </div>
+        {/* Head Gradient */}
+        <linearGradient
+          id="headGradient"
+          x1="140"
+          y1="150"
+          x2="370"
+          y2="400"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#00AFFF" />
+          <stop offset="0.55" stopColor="#1769E8" />
+          <stop offset="1" stopColor="#6D28D9" />
+        </linearGradient>
+
+        {/* Glow */}
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="8" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      {/* Shield */}
+      <path
+        d="M250 35
+           L445 105
+           L435 280
+           C430 365 365 430 250 475
+           C135 430 70 365 65 280
+           L55 105
+           Z"
+        stroke="url(#shieldGradient)"
+        strokeWidth="25"
+        strokeLinejoin="round"
+        filter="url(#glow)"
+      />
+
+      {/* Head */}
+      <path
+        d="M250 105
+           C170 105 115 160 115 235
+           C115 275 130 300 150 320
+           C145 350 160 390 205 410
+           C235 425 270 430 305 415
+           C345 398 365 360 365 315
+           C390 280 390 220 365 175
+           C340 130 300 105 250 105Z"
+        fill="url(#headGradient)"
+      />
+
+      {/* Face Cut */}
+      <path
+        d="M145 275
+           C125 290 125 315 145 325
+           L165 330
+           L150 350
+           L175 350
+           C190 390 225 410 260 415"
+        fill="url(#headGradient)"
+      />
+
+      {/* Neural Network Lines */}
+      <g
+        stroke="white"
+        strokeWidth="7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <line x1="205" y1="170" x2="270" y2="125" />
+        <line x1="270" y1="125" x2="335" y2="170" />
+        <line x1="205" y1="170" x2="230" y2="250" />
+        <line x1="270" y1="125" x2="250" y2="250" />
+        <line x1="335" y1="170" x2="250" y2="250" />
+        <line x1="230" y1="250" x2="250" y2="330" />
+        <line x1="250" y1="250" x2="315" y2="300" />
+        <line x1="250" y1="330" x2="315" y2="300" />
+        <line x1="205" y1="170" x2="315" y2="300" />
+        <line x1="230" y1="250" x2="335" y2="170" />
+      </g>
+
+      {/* Neural Nodes */}
+      <g fill="white">
+        <circle cx="205" cy="170" r="18" />
+        <circle cx="270" cy="125" r="18" />
+        <circle cx="335" cy="170" r="18" />
+        <circle cx="230" cy="250" r="18" />
+        <circle cx="250" cy="250" r="20" />
+        <circle cx="315" cy="300" r="18" />
+        <circle cx="250" cy="330" r="18" />
+      </g>
+
+      {/* Metallic Accent */}
+      <path
+        d="M145 385 L215 390 L185 420 Z"
+        fill="#A7A9AC"
+        opacity="0.9"
+      />
+    </svg>
   )
 }
 

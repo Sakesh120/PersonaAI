@@ -242,7 +242,7 @@ function ChatScreen({
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#080D1B] text-white">
+    <main className="min-h-screen overflow-hidden bg-[#0B1220] text-slate-50">
 
       {/* Background Glow */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
@@ -252,7 +252,7 @@ function ChatScreen({
       </div>
 
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-30 h-screen w-64 border-r border-white/10 bg-[#0B1222]/95 p-5 backdrop-blur-xl">
+      <aside className="fixed left-0 top-0 z-30 h-screen w-64 border-r border-[#263449] bg-[#111827]/95 p-5 backdrop-blur-xl">
 
         {/* Logo */}
         <div className="flex items-center gap-3">
@@ -290,7 +290,7 @@ function ChatScreen({
           {/* Active Chat */}
           <button
             type="button"
-            className="flex w-full items-center gap-3 rounded-xl border border-blue-400/10 bg-gradient-to-r from-blue-500/20 to-purple-500/10 px-4 py-3 text-left text-blue-300 shadow-[0_0_20px_rgba(59,130,246,0.08)]"
+            className="flex w-full items-center gap-3 rounded-xl border border-sky-500/20 bg-[#162033] px-4 py-3 text-left text-sky-300 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.04)]"
           >
             <span className="text-lg">
               ◉
@@ -379,7 +379,7 @@ function ChatScreen({
       <section className="relative ml-64 flex h-screen flex-col">
 
         {/* Header */}
-        <header className="flex shrink-0 items-center justify-between border-b border-white/10 bg-[#0B1222]/70 px-8 py-5 backdrop-blur-xl">
+        <header className="flex shrink-0 items-center justify-between border-b border-[#263449] bg-[#0F172A]/80 px-8 py-5 backdrop-blur-xl">
 
           <div className="flex items-center gap-4">
 
@@ -411,7 +411,7 @@ function ChatScreen({
             <button
               type="button"
               onClick={handleClearChat}
-              className="rounded-xl border border-red-400/10 bg-red-500/5 px-4 py-2.5 text-sm text-red-300 transition-all duration-200 hover:bg-red-500/15"
+              className="rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-2.5 text-sm text-red-300 transition-all duration-200 hover:bg-red-500/10"
             >
               Clear Chat
             </button>
@@ -420,7 +420,7 @@ function ChatScreen({
             <button
               type="button"
               onClick={onBackToDashboard}
-              className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm text-gray-300 transition-all duration-200 hover:bg-white/[0.08] hover:text-white"
+              className="rounded-xl border border-[#263449] bg-[#111827] px-4 py-2.5 text-sm text-slate-300 transition-all duration-200 hover:bg-[#162033] hover:text-white"
             >
               ← Dashboard
             </button>
@@ -455,8 +455,8 @@ function ChatScreen({
                 <div
                   className={
                     chatMessage.sender === "user"
-                      ? "max-w-xl rounded-2xl rounded-tr-md bg-gradient-to-r from-blue-500 to-purple-500 px-5 py-4 shadow-[0_8px_25px_rgba(59,130,246,0.12)]"
-                      : "max-w-xl rounded-2xl rounded-tl-md border border-white/10 bg-[#10182B]/95 px-5 py-4 shadow-[0_8px_25px_rgba(0,0,0,0.15)]"
+                      ? "max-w-xl rounded-2xl rounded-tr-md bg-[#2563EB] px-5 py-4 shadow-[0_10px_22px_rgba(37,99,235,0.18)]"
+                      : "max-w-xl rounded-2xl rounded-tl-md border border-[#263449] bg-[#111827] px-5 py-4 shadow-[0_10px_22px_rgba(15,23,42,0.18)]"
                   }
                 >
 
@@ -503,11 +503,11 @@ function ChatScreen({
         </div>
 
         {/* Input Area */}
-        <div className="shrink-0 border-t border-white/10 bg-[#0B1222]/90 px-8 py-5 backdrop-blur-xl">
+        <div className="shrink-0 border-t border-[#263449] bg-[#0F172A]/90 px-8 py-5 backdrop-blur-xl">
 
           <div className="mx-auto max-w-4xl">
 
-            <div className="rounded-2xl border border-white/10 bg-[#080D1B] p-2 shadow-[0_10px_40px_rgba(0,0,0,0.2)] transition-all duration-200 focus-within:border-blue-400/25 focus-within:shadow-[0_10px_40px_rgba(59,130,246,0.08)]">
+            <div className="rounded-2xl border border-[#263449] bg-[#0F172A] p-2 shadow-[0_12px_30px_rgba(15,23,42,0.18)] transition-all duration-200 focus-within:border-sky-400/30 focus-within:shadow-[0_10px_25px_rgba(56,189,248,0.08)]">
 
               <div className="flex items-center gap-2">
 
@@ -518,7 +518,7 @@ function ChatScreen({
                   onChange={(event) => setMessage(event.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Ask PersonaAI anything..."
-                  className="flex-1 bg-transparent px-4 py-3 text-sm text-white outline-none placeholder:text-gray-600"
+                  className="flex-1 bg-transparent px-4 py-3 text-sm text-slate-50 outline-none placeholder:text-slate-500"
                 />
 
                 {/* Microphone */}

@@ -5,11 +5,11 @@
   "type": "module",
 
   "scripts": {
-    "dev": "concurrently \"vite --port 4173\" \"wait-on http://localhost:4173 && electron src/Electron/main.cjs\"",
-    "electron": "electron src/Electron/main.cjs",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "dev": "npm --prefix desktop/renderer run dev",
+    "electron": "npm --prefix desktop/renderer run electron",
+    "build": "npm --prefix desktop/renderer run build",
+    "lint": "npm --prefix desktop/renderer run lint",
+    "preview": "npm --prefix desktop/renderer run preview"
   },
 
   "dependencies": {

@@ -62,7 +62,7 @@ function TasksScreen({
       </div>
 
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-30 h-screen w-64 border-r border-white/10 bg-[#0B1222]/95 p-5 backdrop-blur-xl">
+      <aside className="fixed left-0 top-0 z-30 h-screen w-64 border-r border-[#263449] bg-[#111827]/95 p-5 backdrop-blur-xl">
 
         {/* Logo */}
         <div className="flex items-center gap-3">
@@ -94,7 +94,7 @@ function TasksScreen({
           <button
             type="button"
             onClick={onBackToDashboard}
-            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-gray-400 transition-all duration-200 hover:bg-white/5 hover:text-white"
+            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-slate-400 transition-all duration-200 hover:bg-[#162033] hover:text-white"
           >
             <span className="text-lg transition-transform group-hover:scale-110">
               ⌂
@@ -109,7 +109,7 @@ function TasksScreen({
           <button
             type="button"
             onClick={onOpenChat}
-            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-gray-400 transition-all duration-200 hover:bg-white/5 hover:text-white"
+            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-slate-400 transition-all duration-200 hover:bg-[#162033] hover:text-white"
           >
             <span className="text-lg transition-transform group-hover:scale-110">
               ◉
@@ -124,7 +124,7 @@ function TasksScreen({
           <button
             type="button"
             onClick={onOpenFiles}
-            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-gray-400 transition-all duration-200 hover:bg-white/5 hover:text-white"
+            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-slate-400 transition-all duration-200 hover:bg-[#162033] hover:text-white"
           >
             <span className="text-lg transition-transform group-hover:scale-110">
               ▣
@@ -138,7 +138,7 @@ function TasksScreen({
           {/* Active Tasks */}
           <button
             type="button"
-            className="flex w-full items-center gap-3 rounded-xl border border-blue-400/10 bg-gradient-to-r from-blue-500/20 to-purple-500/10 px-4 py-3 text-left text-blue-300 shadow-[0_0_20px_rgba(59,130,246,0.08)]"
+            className="flex w-full items-center gap-3 rounded-xl border border-sky-500/20 bg-[#162033] px-4 py-3 text-left text-sky-300 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.04)]"
           >
             <span className="text-lg">
               ✓
@@ -155,7 +155,7 @@ function TasksScreen({
           <button
             type="button"
             onClick={onOpenSettings}
-            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-gray-400 transition-all duration-200 hover:bg-white/5 hover:text-white"
+            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-slate-400 transition-all duration-200 hover:bg-[#162033] hover:text-white"
           >
             <span className="text-lg transition-transform group-hover:scale-110">
               ⚙
@@ -233,7 +233,7 @@ function TasksScreen({
         </header>
 
         {/* Create Task */}
-        <div className="group relative mt-8 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#111A30] via-[#10172A] to-[#15112D] p-7 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
+        <div className="group relative mt-8 overflow-hidden rounded-3xl border border-[#263449] bg-[#111827] p-7 shadow-[0_18px_30px_rgba(15,23,42,0.18)]">
 
           {/* Glow */}
           <div className="pointer-events-none absolute right-0 top-0 h-40 w-64 rounded-full bg-purple-500/10 blur-3xl" />
@@ -270,13 +270,13 @@ function TasksScreen({
                   }
                 }}
                 placeholder="Enter a new task..."
-                className="flex-1 rounded-xl border border-white/10 bg-[#080D1B]/80 px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-gray-600 focus:border-blue-400/40 focus:ring-2 focus:ring-blue-500/10"
+                className="flex-1 rounded-xl border border-[#263449] bg-[#0F172A] px-4 py-3 text-sm text-slate-50 outline-none transition-all placeholder:text-slate-500 focus:border-sky-400/40 focus:ring-2 focus:ring-sky-500/10"
               />
 
               <button
                 type="button"
                 onClick={addTask}
-                className="rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 px-7 text-sm font-semibold shadow-[0_8px_25px_rgba(59,130,246,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(59,130,246,0.28)] active:translate-y-0"
+                className="rounded-xl bg-[#2563EB] px-7 text-sm font-semibold shadow-[0_10px_20px_rgba(37,99,235,0.18)] transition-all duration-200 hover:bg-[#1D4ED8] active:translate-y-0"
               >
                 Add Task
               </button>
@@ -339,7 +339,7 @@ function TasksScreen({
 
                   <div
                     key={`${item}-${index}`}
-                    className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-[#10182B]/90 p-4 backdrop-blur-xl transition-all duration-200 hover:border-blue-400/20 hover:bg-[#121C32] hover:shadow-[0_10px_35px_rgba(0,0,0,0.2)]"
+                    className="group flex items-center gap-4 rounded-2xl border border-[#263449] bg-[#111827] p-4 backdrop-blur-xl transition-all duration-200 hover:border-sky-400/20 hover:bg-[#162033] hover:shadow-[0_10px_30px_rgba(15,23,42,0.18)]"
                   >
 
                     {/* Task Icon */}

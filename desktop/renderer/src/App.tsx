@@ -11,6 +11,8 @@ import SettingsScreen from "./components/SettingsScreen"
 import FilesScreen from "./components/FilesScreen"
 import TasksScreen from "./components/TasksScreen"
 
+import IntroVideo from "./components/IntroVideo"
+
 type Page =
   | "splash"
   | "welcome"
@@ -24,45 +26,76 @@ type Page =
   | "tasks"
 
 function App() {
+  // First show the PersonaAI intro video
+  const [showIntroVideo, setShowIntroVideo] = useState(true)
+
   const [page, setPage] = useState<Page>("splash")
 
   const withThemeControls = (content: ReactNode) => content
 
-  // Splash → Welcome after 2 seconds
+  // Show the splash screen briefly after the intro video finishes.
   useEffect(() => {
-    if (page !== "splash") return
+    if (showIntroVideo || page !== "splash") return
 
     const timer = setTimeout(() => {
       setPage("welcome")
     }, 2000)
 
     return () => clearTimeout(timer)
-  }, [page])
+  }, [page, showIntroVideo])
 
-  // Splash
-  if (page === "splash") {
-    return withThemeControls(<SplashScreen />)
+  // --------------------------------------------------
+  // FIRST: PersonaAI Intro Video
+  // --------------------------------------------------
+  if (showIntroVideo) {
+    return (
+      <IntroVideo
+        onComplete={() => {
+          setShowIntroVideo(false)
+        }}
+      />
+    )
   }
 
+  // --------------------------------------------------
+  // Splash
+  // --------------------------------------------------
+  if (page === "splash") {
+    return withThemeControls(
+      <SplashScreen />
+    )
+  }
+
+  // --------------------------------------------------
   // Welcome
+  // --------------------------------------------------
   if (page === "welcome") {
     return withThemeControls(
       <WelcomeScreen
         onGetStarted={() => setPage("signup")}
+        onLogin={() => setPage("login")}
+        onSignUp={() => setPage("signup")}
+        onOpenChat={() => setPage("chat")}
+        onOpenDashboard={() => setPage("dashboard")}
       />
     )
   }
 
+  // --------------------------------------------------
   // Sign Up
+  // --------------------------------------------------
   if (page === "signup") {
     return withThemeControls(
       <SignUpScreen
         onLogin={() => setPage("login")}
+        onHome={() => setPage("welcome")}
       />
     )
   }
 
+  // --------------------------------------------------
   // Login
+  // --------------------------------------------------
   if (page === "login") {
     return withThemeControls(
       <LoginScreen
@@ -74,7 +107,9 @@ function App() {
     )
   }
 
+  // --------------------------------------------------
   // Forgot Password
+  // --------------------------------------------------
   if (page === "forgot") {
     return withThemeControls(
       <ForgotPasswordScreen
@@ -83,7 +118,9 @@ function App() {
     )
   }
 
+  // --------------------------------------------------
   // Dashboard
+  // --------------------------------------------------
   if (page === "dashboard") {
     return withThemeControls(
       <Dashboard
@@ -95,7 +132,9 @@ function App() {
     )
   }
 
+  // --------------------------------------------------
   // AI Chat
+  // --------------------------------------------------
   if (page === "chat") {
     return withThemeControls(
       <ChatScreen
@@ -107,28 +146,37 @@ function App() {
     )
   }
 
+  // --------------------------------------------------
+  // Files
+  // --------------------------------------------------
   if (page === "files") {
-  return withThemeControls(
-    <FilesScreen
-      onBackToDashboard={() => setPage("dashboard")}
-      onOpenChat={() => setPage("chat")}
-      onOpenTasks={() => setPage("tasks")}
-      onOpenSettings={() => setPage("settings")}
-    />
-  )
-}
-if (page === "tasks") {
-  return (
-    <TasksScreen
-      onBackToDashboard={() => setPage("dashboard")}
-      onOpenChat={() => setPage("chat")}
-      onOpenFiles={() => setPage("files")}
-      onOpenSettings={() => setPage("settings")}
-    />
-  )
-}
+    return withThemeControls(
+      <FilesScreen
+        onBackToDashboard={() => setPage("dashboard")}
+        onOpenChat={() => setPage("chat")}
+        onOpenTasks={() => setPage("tasks")}
+        onOpenSettings={() => setPage("settings")}
+      />
+    )
+  }
 
+  // --------------------------------------------------
+  // Tasks
+  // --------------------------------------------------
+  if (page === "tasks") {
+    return withThemeControls(
+      <TasksScreen
+        onBackToDashboard={() => setPage("dashboard")}
+        onOpenChat={() => setPage("chat")}
+        onOpenFiles={() => setPage("files")}
+        onOpenSettings={() => setPage("settings")}
+      />
+    )
+  }
+
+  // --------------------------------------------------
   // Settings
+  // --------------------------------------------------
   if (page === "settings") {
     return withThemeControls(
       <SettingsScreen

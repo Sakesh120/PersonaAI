@@ -67,7 +67,7 @@ function SettingsScreen({
     <main className="min-h-screen bg-[#0B1020] text-white">
 
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-20 h-screen w-64 border-r border-white/10 bg-[#0D1426] p-5">
+      <aside className="fixed left-0 top-0 z-20 h-screen w-64 border-r border-[#263449] bg-[#111827] p-5">
 
         {/* Logo */}
         <div className="flex items-center gap-3">
@@ -126,7 +126,7 @@ function SettingsScreen({
           {/* Settings */}
           <button
             type="button"
-            className="w-full rounded-xl bg-blue-500/15 px-4 py-3 text-left text-blue-300"
+            className="w-full rounded-xl border border-sky-500/20 bg-[#162033] px-4 py-3 text-left text-sky-300"
           >
             ⚙ &nbsp; Settings
           </button>
@@ -134,7 +134,7 @@ function SettingsScreen({
         </nav>
 
         {/* User */}
-        <div className="absolute bottom-5 left-5 right-5 border-t border-white/10 pt-4">
+        <div className="absolute bottom-5 left-5 right-5 border-t border-[#263449] pt-4">
 
           <div className="flex items-center gap-3">
 
@@ -202,7 +202,7 @@ function SettingsScreen({
               Manage your personal account information.
             </p>
 
-            <div className="mt-5 rounded-xl border border-white/5 bg-[#0B1020] p-4">
+            <div className="mt-5 rounded-xl border border-[#263449] bg-[#0F172A] p-4">
 
               <div className="flex items-center justify-between">
 
@@ -228,7 +228,7 @@ function SettingsScreen({
                         }
                       }}
                       autoFocus
-                      className="mt-2 rounded-lg border border-white/10 bg-[#11182B] px-3 py-2 text-sm text-white outline-none focus:border-blue-500"
+                      className="mt-2 rounded-lg border border-[#263449] bg-[#111827] px-3 py-2 text-sm text-slate-50 outline-none focus:border-sky-400"
                     />
                   )}
                 </div>
@@ -240,7 +240,7 @@ function SettingsScreen({
                       setNameInput(userName)
                       setEditingName(true)
                     }}
-                    className="rounded-lg px-3 py-2 text-sm text-blue-400 transition hover:bg-blue-500/10"
+                    className="rounded-lg px-3 py-2 text-sm text-sky-400 transition hover:bg-sky-500/10"
                   >
                     Edit
                   </button>
@@ -248,7 +248,7 @@ function SettingsScreen({
                   <button
                     type="button"
                     onClick={handleSaveName}
-                    className="rounded-lg bg-blue-500 px-3 py-2 text-sm font-medium transition hover:bg-blue-600"
+                    className="rounded-lg bg-[#2563EB] px-3 py-2 text-sm font-medium transition hover:bg-[#1D4ED8]"
                   >
                     Save
                   </button>
@@ -356,7 +356,7 @@ function SettingsScreen({
               PersonaAI desktop data preferences.
             </p>
 
-            <div className="mt-5 flex items-center justify-between rounded-xl border border-white/5 bg-[#0B1020] p-4">
+            <div className="mt-5 flex items-center justify-between rounded-xl border border-[#263449] bg-[#0F172A] p-4">
 
               <div>
                 <p className="font-medium">

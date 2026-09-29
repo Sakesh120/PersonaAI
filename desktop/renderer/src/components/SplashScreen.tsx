@@ -24,12 +24,13 @@ function SplashScreen({ onFinish }: { onFinish?: () => void }) {
 
       {/* Center Content */}
       <div className="relative z-10 flex flex-col items-center text-center">
-        {/* Glowing P Logo */}
-        <div className="relative h-40 w-40">
+        {/* Glowing PersonaAI Logo */}
+        <div className="relative h-[clamp(180px,25vw,240px)] w-[clamp(180px,25vw,240px)]">
           <div className="absolute -inset-8 rounded-full bg-blue-500/20 blur-3xl animate-pulse" />
-          <div className="absolute inset-0 rounded-full border border-blue-400/60 shadow-[0_0_40px_rgba(59,130,246,0.6)]" />
-          <div className="absolute inset-4 rounded-full border border-purple-400/50" />
-          <PersonaLogo size="xl" className="absolute inset-0 m-auto" />
+          <PersonaLogo
+            size={240}
+            className="relative h-full w-full object-contain drop-shadow-[0_0_24px_rgba(59,130,246,0.45)]"
+          />
         </div>
 
         {/* PersonaAI */}
