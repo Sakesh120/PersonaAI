@@ -3,6 +3,7 @@ import cors from "cors";
 import multer from "multer";
 import { env } from "./config/env.js";
 import { AIServiceClient } from "./services/ai-service.client.js";
+import {router as chatRoutes} from "./routes/chat.js"
 
 export const app = express();
 app.use(cors());
@@ -10,6 +11,15 @@ app.use(express.json());
 
 const aiClient = new AIServiceClient(env.aiServiceUrl);
 const documents = new Map<string, { id: string; name: string; createdAt: string }>();
+
+app.get("/", (req, res) => {
+  res.send("Hii I am Root route");
+});
+
+
+app.use("/api/chats", chatRoutes);
+
+
 
 app.get("/api/health", async (_req, res) => {
   try {
@@ -27,20 +37,6 @@ app.get("/api/health", async (_req, res) => {
   }
 });
 
-app.post("/api/chat", async (req, res, next) => {
-  try {
-    const { message, conversationId = "default" } = req.body || {};
-
-    if (!message || typeof message !== "string") {
-      return res.status(400).json({ error: "message is required" });
-    }
-
-    const response = await aiClient.chat({ message, conversationId });
-    res.json(response);
-  } catch (error) {
-    next(error);
-  }
-});
 
 app.post(
   "/api/documents/upload",
