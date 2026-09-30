@@ -33,7 +33,7 @@ function IntroVideo({ onComplete }: IntroVideoProps) {
 
   return (
     <main
-      className={`fixed inset-0 z-[9999] overflow-hidden bg-[#0B1020] transition-opacity duration-700 ${
+      className={`fixed inset-0 z-9999 overflow-hidden bg-[#0B1020] transition-opacity duration-700 ${
         fadeOut ? "opacity-0" : "opacity-100"
       }`}
     >
@@ -54,7 +54,7 @@ function IntroVideo({ onComplete }: IntroVideoProps) {
       <div className="pointer-events-none absolute inset-0 bg-[#0B1020]/10" />
 
       {/* Subtle edge blending */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#0B1020]/20 via-transparent to-[#0B1020]/30" />
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-[#0B1020]/20 via-transparent to-[#0B1020]/30" />
     </main>
   )
 }
