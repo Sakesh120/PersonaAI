@@ -24,7 +24,7 @@ class Settings:
 
     ollama_model: str = os.getenv(
         "OLLAMA_MODEL",
-        "qwen:4b"
+        "qwen3.5:9b"
     )
 
     # Generation
