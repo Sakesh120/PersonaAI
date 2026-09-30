@@ -2,6 +2,226 @@ import type { ReactNode } from "react"
 
 import PersonaLogo from "./PersonaLogo"
 
+const VIZ_NODE = { x: 360, y: 278 }
+const VIZ_CARD = { w: 76, h: 94 }
+
+const VIZ_DOCS = [
+  { id: "1", x: 88, y: 44, variant: "lines" as const, className: "persona-viz-doc" },
+  { id: "2", x: 512, y: 30, variant: "profile" as const, className: "persona-viz-doc persona-viz-doc-2" },
+  { id: "3", x: 554, y: 216, variant: "list" as const, className: "persona-viz-doc persona-viz-doc-3" },
+  { id: "4", x: 94, y: 348, variant: "lock" as const, className: "persona-viz-doc persona-viz-doc-4" },
+  { id: "5", x: 494, y: 368, variant: "notes" as const, className: "persona-viz-doc persona-viz-doc-5" },
+]
+
+function vizCardCenter(doc: (typeof VIZ_DOCS)[number]) {
+  return { x: doc.x + VIZ_CARD.w / 2, y: doc.y + VIZ_CARD.h / 2 }
+}
+
+function vizCurve(from: { x: number; y: number }, bend: number) {
+  const mx = (from.x + VIZ_NODE.x) / 2
+  const my = (from.y + VIZ_NODE.y) / 2
+  const dx = VIZ_NODE.x - from.x
+  const dy = VIZ_NODE.y - from.y
+  const len = Math.hypot(dx, dy) || 1
+  const cx = mx + (-dy / len) * bend
+  const cy = my + (dx / len) * bend
+  return `M ${from.x} ${from.y} Q ${cx} ${cy} ${VIZ_NODE.x} ${VIZ_NODE.y}`
+}
+
+function KnowledgeVizDoc({
+  variant,
+}: {
+  variant: (typeof VIZ_DOCS)[number]["variant"]
+}) {
+  return (
+    <>
+      <rect
+        width={VIZ_CARD.w}
+        height={VIZ_CARD.h}
+        rx="8"
+        fill="#111827"
+        fillOpacity="0.92"
+        stroke="rgba(148,163,184,0.28)"
+        strokeWidth="1"
+      />
+      <path d="M58 0 L76 18 H63 Q58 18 58 13 Z" fill="#1e293b" />
+      <path
+        d="M58 0 V13 Q58 18 63 18 H76"
+        fill="none"
+        stroke="rgba(56,189,248,0.28)"
+        strokeWidth="0.9"
+      />
+      <rect x="14" y="16" width="14" height="16" rx="2" fill="none" stroke="#38BDF8" strokeOpacity="0.7" strokeWidth="1.1" />
+      <path d="M18 16 V20 H24 V16" fill="none" stroke="#38BDF8" strokeOpacity="0.7" strokeWidth="1.1" />
+      {variant === "profile" && (
+        <>
+          <circle cx="21" cy="28" r="2.4" fill="#38BDF8" fillOpacity="0.75" />
+          <path d="M17.5 33.2 C17.5 31.4 24.5 31.4 24.5 33.2" stroke="#38BDF8" strokeOpacity="0.7" strokeWidth="1" fill="none" />
+        </>
+      )}
+      {variant === "lock" && (
+        <>
+          <rect x="18.5" y="27" width="5" height="4.5" rx="0.8" fill="#38BDF8" fillOpacity="0.75" />
+          <path d="M19.4 27 V25.4 A1.6 1.6 0 0 1 22.6 25.4 V27" fill="none" stroke="#38BDF8" strokeOpacity="0.75" strokeWidth="1" />
+        </>
+      )}
+      <rect x="14" y="42" width="36" height="3" rx="1.5" fill="#38BDF8" fillOpacity="0.38" />
+      <rect x="14" y="50" width="28" height="3" rx="1.5" fill="#94A3B8" fillOpacity="0.28" />
+      <rect x="14" y="58" width="32" height="3" rx="1.5" fill="#94A3B8" fillOpacity="0.22" />
+      {variant !== "list" && <rect x="14" y="66" width="22" height="3" rx="1.5" fill="#94A3B8" fillOpacity="0.16" />}
+      {variant === "list" && (
+        <>
+          <rect x="14" y="66" width="3" height="3" rx="0.6" fill="#38BDF8" fillOpacity="0.45" />
+          <rect x="20" y="66" width="24" height="3" rx="1.5" fill="#94A3B8" fillOpacity="0.2" />
+          <rect x="14" y="74" width="3" height="3" rx="0.6" fill="#38BDF8" fillOpacity="0.28" />
+          <rect x="20" y="74" width="18" height="3" rx="1.5" fill="#94A3B8" fillOpacity="0.16" />
+        </>
+      )}
+    </>
+  )
+}
+
+function KnowledgeVisualization() {
+  const bends = [46, -40, 26, -48, 34]
+  const paths = VIZ_DOCS.map((doc, index) => ({
+    id: doc.id,
+    d: vizCurve(vizCardCenter(doc), bends[index]),
+    className: `persona-viz-link persona-viz-link-${doc.id}`,
+  }))
+  const answer = { x: 236, y: 132, w: 132, h: 78 }
+  const answerPath = `M ${answer.x + answer.w / 2} ${answer.y + answer.h} Q 300 230 ${VIZ_NODE.x} ${VIZ_NODE.y}`
+
+  return (
+    <svg
+      viewBox="0 0 720 560"
+      className="h-auto w-full max-w-[540px]"
+      fill="none"
+      aria-hidden="true"
+    >
+      <defs>
+        <filter id="persona-viz-soft-glow" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="6" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      <g opacity="0.22">
+        <rect x="48" y="118" width="52" height="66" rx="6" fill="#111827" stroke="rgba(148,163,184,0.35)" />
+        <rect x="638" y="96" width="46" height="58" rx="6" fill="#111827" stroke="rgba(148,163,184,0.35)" />
+        <rect x="40" y="268" width="48" height="60" rx="6" fill="#111827" stroke="rgba(148,163,184,0.35)" />
+        <rect x="650" y="318" width="44" height="56" rx="6" fill="#111827" stroke="rgba(148,163,184,0.35)" />
+      </g>
+
+      <g transform="translate(668 72)">
+        <g className="persona-viz-spark">
+          <path d="M0 -7 L1.1 0 L0 7 L-1.1 0 Z" fill="#7DD3FC" />
+          <path d="M-7 0 L0 1.1 L7 0 L0 -1.1 Z" fill="#7DD3FC" />
+        </g>
+      </g>
+      <g transform="translate(84 470)">
+        <g className="persona-viz-spark persona-viz-spark-2">
+          <path d="M0 -5 L0.9 0 L0 5 L-0.9 0 Z" fill="#7DD3FC" />
+          <path d="M-5 0 L0 0.9 L5 0 L0 -0.9 Z" fill="#7DD3FC" />
+        </g>
+      </g>
+
+      {paths.map((path) => (
+        <path
+          key={path.id}
+          id={`persona-viz-path-${path.id}`}
+          className={path.className}
+          d={path.d}
+          pathLength="1"
+        />
+      ))}
+      <path
+        id="persona-viz-path-answer"
+        className="persona-viz-link"
+        d={answerPath}
+        pathLength="1"
+      />
+
+      <g transform={`translate(${VIZ_NODE.x} ${VIZ_NODE.y})`}>
+        <circle className="persona-viz-glow" r="28" fill="#38BDF8" fillOpacity="0.12" />
+        <g className="persona-viz-node">
+          <circle r="16" fill="#0F172A" stroke="#38BDF8" strokeOpacity="0.45" strokeWidth="1.2" />
+          <circle r="11" fill="#0B1220" stroke="#38BDF8" strokeOpacity="0.28" />
+          <circle r="4.5" fill="#38BDF8" filter="url(#persona-viz-soft-glow)" />
+          <circle r="1.5" cx="-5" cy="-4" fill="#7DD3FC" fillOpacity="0.7" />
+          <circle r="1.5" cx="5.5" cy="-3" fill="#7DD3FC" fillOpacity="0.55" />
+          <circle r="1.5" cx="4" cy="5.5" fill="#7DD3FC" fillOpacity="0.5" />
+        </g>
+        <text
+          y="36"
+          textAnchor="middle"
+          fill="#7DD3FC"
+          fillOpacity="0.55"
+          fontSize="8"
+          letterSpacing="0.08em"
+        >
+          knowledge processing
+        </text>
+      </g>
+
+      {VIZ_DOCS.map((doc) => (
+        <g key={doc.id} transform={`translate(${doc.x} ${doc.y})`}>
+          <g className={doc.className}>
+            <KnowledgeVizDoc variant={doc.variant} />
+          </g>
+        </g>
+      ))}
+
+      {paths.map((path, index) => (
+        <circle
+          key={`particle-${path.id}`}
+          r="2.15"
+          fill="#38BDF8"
+          className="persona-viz-particle"
+          filter="url(#persona-viz-soft-glow)"
+        >
+          <animateMotion dur={`${2.4 + index * 0.18}s`} begin={`${2.05 + index * 0.28}s`} repeatCount="indefinite">
+            <mpath href={`#persona-viz-path-${path.id}`} />
+          </animateMotion>
+        </circle>
+      ))}
+      <circle r="1.7" fill="#7DD3FC" className="persona-viz-particle">
+        <animateMotion dur="2.6s" begin="2.8s" repeatCount="indefinite">
+          <mpath href="#persona-viz-path-2" />
+        </animateMotion>
+      </circle>
+      <circle r="1.7" fill="#7DD3FC" className="persona-viz-particle">
+        <animateMotion dur="2.9s" begin="3.15s" repeatCount="indefinite">
+          <mpath href="#persona-viz-path-4" />
+        </animateMotion>
+      </circle>
+
+      <g transform={`translate(${answer.x} ${answer.y})`}>
+        <g className="persona-viz-answer">
+        <rect
+          width={answer.w}
+          height={answer.h}
+          rx="12"
+          fill="#F8FAFC"
+          fillOpacity="0.96"
+          stroke="rgba(56,189,248,0.35)"
+        />
+        <circle cx="22" cy="22" r="9" fill="#0F172A" />
+        <circle cx="22" cy="20" r="2.4" fill="#38BDF8" />
+        <path d="M16.8 26.2 C16.8 23.6 27.2 23.6 27.2 26.2" stroke="#38BDF8" strokeWidth="1.1" fill="none" />
+        <rect x="38" y="16" width="72" height="5" rx="2.5" fill="#0F172A" fillOpacity="0.78" />
+        <rect x="38" y="26" width="58" height="4" rx="2" fill="#94A3B8" fillOpacity="0.7" />
+        <rect x="16" y="42" width="96" height="4" rx="2" fill="#CBD5E1" />
+        <rect x="16" y="52" width="78" height="4" rx="2" fill="#E2E8F0" />
+        <rect x="16" y="62" width="64" height="4" rx="2" fill="#E2E8F0" />
+        </g>
+      </g>
+    </svg>
+  )
+}
+
 function WelcomeScreen({
   onGetStarted,
   onLogin,
@@ -95,7 +315,7 @@ function WelcomeScreen({
           </nav>
         </header>
 
-        <section className="grid flex-1 items-center gap-8 pb-8 pt-6 lg:grid-cols-1">
+        <section className="grid flex-1 items-center gap-8 pb-8 pt-6 lg:grid-cols-2">
           <div className="max-w-xl lg:pl-4">
             <div className="relative mb-7 h-24 w-24">
               <div className="absolute -inset-4 rounded-full bg-blue-500/15 blur-2xl" />
@@ -109,10 +329,10 @@ function WelcomeScreen({
               Welcome to
             </p>
 
-            <h1 className="mt-4 text-4xl font-semibold leading-[0.95] tracking-[-0.06em] text-slate-50 sm:text-5xl lg:text-[4.25rem]">
+            <h1 className="mt-4 text-2xl font-semibold leading-[0.95] tracking-[-0.06em] text-slate-50 sm:text-3xl lg:text-[3.25rem]">
               <span className="block">PersonaAI</span>
-              <span className="mt-2 block bg-gradient-to-r from-sky-300 via-sky-400 to-blue-500 bg-clip-text text-transparent">
-                Work smarter.
+              <span className="mt-2 block bg-linear-to-r from-sky-300 via-sky-400 to-blue-500 bg-clip-text text-transparent">
+                Your Personal AI Assistant.
               </span>
             </h1>
 
@@ -146,114 +366,11 @@ function WelcomeScreen({
             </ul>
           </div>
 
-          <div className="hidden">
-            <div className="absolute left-[8%] top-[16%] h-24 w-20">
-              <div className="absolute left-1/2 top-0 h-10 w-7 -translate-x-1/2 rounded-t-full rounded-b-md border border-slate-600 bg-slate-800/70" />
-              <div className="absolute left-1/2 top-7 h-12 w-14 -translate-x-1/2 rounded-t-[18px] rounded-b-md border border-slate-600 bg-gradient-to-b from-[#273349] to-[#1A2332]" />
-              <div className="absolute left-1/2 top-10 h-3 w-10 -translate-x-1/2 rounded-full bg-slate-700" />
-              <div className="absolute left-1/2 top-6 h-10 w-[2px] -translate-x-1/2 bg-slate-600" />
-            </div>
-
-            <div className="absolute left-[10%] bottom-[12%] h-20 w-16">
-              <div className="absolute bottom-0 left-4 h-10 w-8 rounded-t-xl rounded-b-md border border-emerald-500/30 bg-emerald-500/10" />
-              <div className="absolute bottom-7 left-0 h-8 w-6 rounded-full bg-emerald-400/20" />
-              <div className="absolute bottom-7 right-0 h-7 w-5 rounded-full bg-emerald-400/20" />
-              <div className="absolute bottom-9 left-5 h-6 w-5 rounded-full bg-emerald-400/20" />
-            </div>
-
-            <div className="absolute right-[8%] bottom-[12%] h-10 w-14 rounded-full border border-slate-600 bg-slate-800/80 shadow-[inset_0_2px_6px_rgba(255,255,255,0.04)]" />
-
-            <div className="absolute right-[9%] bottom-[17%] h-4 w-7 rounded-full border border-slate-600 bg-slate-700/80" />
-
-            <div className="absolute left-[14%] bottom-[12%] h-14 w-20 rounded-2xl border border-slate-700 bg-[#101827] shadow-[0_18px_25px_rgba(15,23,42,0.28)]">
-              <div className="flex items-center gap-2 border-b border-slate-700 px-3 py-2">
-                <span className="h-2 w-2 rounded-full bg-sky-400" />
-                <span className="h-2 w-2 rounded-full bg-slate-500" />
-                <span className="h-2 w-2 rounded-full bg-slate-500" />
-              </div>
-              <div className="space-y-2 px-3 py-2">
-                <div className="h-2 w-10 rounded-full bg-slate-700" />
-                <div className="h-2 w-14 rounded-full bg-slate-700" />
-                <div className="h-2 w-12 rounded-full bg-slate-700" />
-              </div>
-            </div>
-
-            <div className="relative w-[100%] max-w-[720px]">
-              <div className="relative overflow-hidden rounded-[30px] border border-slate-700 bg-[#0F172A] p-4 shadow-[0_30px_80px_rgba(2,6,23,0.7)]">
-                <div className="mb-4 flex items-center justify-between border-b border-slate-700 pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#F87171]" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#FBBF24]" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#4ADE80]" />
-                  </div>
-                  <div className="rounded-full border border-sky-400/25 bg-sky-500/10 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.22em] text-sky-300">
-                    Workspace
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-slate-700 bg-[#111827] p-3">
-                  <div className="mb-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2.5 w-16 rounded-full bg-slate-700" />
-                      <span className="h-2.5 w-14 rounded-full bg-slate-800" />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full bg-sky-400" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-slate-600" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-slate-600" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-xl border border-slate-700 bg-[#162033] p-3">
-                      <div className="mb-3 h-2.5 w-20 rounded-full bg-slate-600" />
-                      <div className="space-y-2">
-                        <div className="h-2 w-full rounded-full bg-slate-700" />
-                        <div className="h-2 w-11/12 rounded-full bg-slate-700" />
-                        <div className="h-2 w-10/12 rounded-full bg-slate-700" />
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border border-slate-700 bg-[#162033] p-3">
-                      <div className="mb-3 flex items-center justify-between">
-                        <span className="h-2.5 w-12 rounded-full bg-slate-600" />
-                        <span className="h-2.5 w-2.5 rounded-full bg-sky-400" />
-                      </div>
-                      <div className="flex h-16 items-end gap-2">
-                        <span className="w-1/5 rounded-t-md bg-sky-400/60" style={{ height: "35%" }} />
-                        <span className="w-1/5 rounded-t-md bg-sky-400/70" style={{ height: "60%" }} />
-                        <span className="w-1/5 rounded-t-md bg-sky-400/85" style={{ height: "80%" }} />
-                        <span className="w-1/5 rounded-t-md bg-sky-400/70" style={{ height: "58%" }} />
-                        <span className="w-1/5 rounded-t-md bg-sky-400/60" style={{ height: "42%" }} />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 rounded-xl border border-slate-700 bg-[#0F172A] p-3">
-                    <div className="flex items-center justify-between">
-                      <span className="h-2.5 w-16 rounded-full bg-slate-600" />
-                      <span className="h-2.5 w-10 rounded-full bg-sky-500/40" />
-                    </div>
-                    <div className="mt-3 grid grid-cols-[1.3fr_0.7fr] gap-2">
-                      <div className="space-y-2 rounded-lg border border-slate-700 bg-[#111827] p-2">
-                        <div className="h-2.5 w-20 rounded-full bg-slate-600" />
-                        <div className="h-2 w-24 rounded-full bg-slate-700" />
-                        <div className="h-2 w-12 rounded-full bg-slate-700" />
-                      </div>
-                      <div className="flex items-center justify-center rounded-lg border border-slate-700 bg-[#111827]">
-                        <div className="h-10 w-10 rounded-full border border-sky-400/30 bg-sky-500/10" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mx-auto mt-[-4px] h-3 w-[82%] rounded-b-[18px] border border-slate-700 bg-[#111827] shadow-[0_10px_22px_rgba(15,23,42,0.6)]" />
-              <div className="mx-auto h-4 w-[92%] rounded-b-2xl bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700" />
-            </div>
-
-            <div className="absolute bottom-0 left-1/2 h-14 w-[90%] -translate-x-1/2 rounded-[28px] border border-slate-700/70 bg-[#111827] shadow-[0_24px_36px_rgba(2,6,23,0.7)]" />
-
+          <div
+            className="pointer-events-none relative hidden min-h-[380px] items-center justify-center overflow-hidden lg:flex"
+            aria-hidden="true"
+          >
+            <KnowledgeVisualization />
           </div>
         </section>
       </div>
