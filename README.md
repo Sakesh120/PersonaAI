@@ -1,75 +1,60 @@
-# React + TypeScript + Vite
+# PersonaAI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+PersonaAI is a privacy-preserving local desktop AI assistant designed for offline-first use. The project separates a desktop shell from a Node API gateway and a single Python AI service so the local AI stack, RAG pipeline, memory, tools, and orchestration logic can evolve without creating redundant microservices.
 
-Currently, two official plugins are available:
+## Why it exists
+The goal is to explore how a local AI assistant can selectively decide when to use general knowledge, retrieved personal documents, memory, or local tools while keeping context small, latency reasonable, and private data local.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Architecture
+- Electron + React desktop shell
+- Node.js + Express API boundary
+- Python FastAPI AI service with the authoritative AI/RAG implementation
+- Optional Ollama-backed local model
 
-## React Compiler
+## Technology stack
+- Frontend: Electron, React, TypeScript, Vite, Tailwind
+- Gateway: Node.js, Express, TypeScript
+- AI core: Python, FastAPI, Ollama, Qwen-ready configuration
+- Research: modular RAG, memory, routing, evaluation modules
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Quick start
+1. Install dependencies: `npm install`
+2. Install Python service dependencies: `python -m pip install -r ai-service/requirements.txt`
+3. Copy `.env.example` to `.env` and configure values if needed.
+4. Start the AI service: `npm run ai`
+5. Start the API: `npm run server`
+6. Start the desktop UI: `npm run dev`
 
-## Expanding the ESLint configuration
+## Local model setup
+Configure Ollama locally and set environment variables such as:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- `OLLAMA_BASE_URL=http://127.0.0.1:11434`
+- `OLLAMA_MODEL=qwen`
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+If Ollama is unavailable, the service returns a clear starter response rather than crashing.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Project structure
+- `desktop/` — Electron + React app
+- `server/` — Node API and gateway logic
+- `ai-service/` — single authoritative Python AI core
+- `docs/` — architecture and API docs
+- `experiments/` — downstream research areas
+- `tests/` — end-to-end coverage and harnesses
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Development workflow
+- `npm run ai` starts the Python AI service
+- `npm run server` starts the Node API
+- `npm run dev` starts the server + renderer
+- `npm run desktop` launches the Electron shell
+- `npm run build` builds the renderer and server
+- `npm test` runs the existing TypeScript test suite
 
-```
+## Research plan
+The initial project is intentionally modular so later work can compare:
+- LLM-only
+- vector RAG
+- hybrid retrieval
+- reranking
+- adaptive routing
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+See `docs/architecture/`, `docs/api/api-specification.md`, and `docs/research/` for starter references.

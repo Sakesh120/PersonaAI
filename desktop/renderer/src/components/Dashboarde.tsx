@@ -129,7 +129,7 @@ function Dashboard({
 
           <div className="flex items-center gap-3 rounded-xl p-2">
 
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 font-bold shadow-[0_0_20px_rgba(99,102,241,0.25)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-500 font-bold shadow-[0_0_20px_rgba(99,102,241,0.25)]">
               U
             </div>
 
@@ -183,7 +183,7 @@ function Dashboard({
 
 
             {/* Profile */}
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 font-bold shadow-[0_0_20px_rgba(99,102,241,0.25)]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-500 font-bold shadow-[0_0_20px_rgba(99,102,241,0.25)]">
               U
             </div>
 
@@ -193,10 +193,10 @@ function Dashboard({
 
 
         {/* ================= HERO ================= */}
-        <div className="relative mt-8 overflow-hidden rounded-3xl border border-[#263449] bg-gradient-to-br from-[#111827] via-[#111827] to-[#162033] p-8 shadow-[0_15px_35px_rgba(15,23,42,0.22)]">
+        <div className="relative mt-8 overflow-hidden rounded-3xl border border-[#263449] bg-linear-to-br from-[#111827] via-[#111827] to-[#162033] p-8 shadow-[0_15px_35px_rgba(15,23,42,0.22)]">
 
           {/* Decorative Glow */}
-          <div className="pointer-events-none absolute right-[-80px] top-[-100px] h-72 w-72 rounded-full bg-blue-500/10 blur-[100px]" />
+          <div className="pointer-events-none absolute -right-20 -top-25 h-72 w-72 rounded-full bg-blue-500/10 blur-[100px]" />
 
           <div className="relative flex items-center justify-between gap-8">
 
@@ -217,7 +217,7 @@ function Dashboard({
               <h3 className="mt-5 text-3xl font-bold leading-tight md:text-4xl">
                 Your ideas.
                 <br />
-                <span className="bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent">
+                <span className="bg-linear-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent">
                   Your productivity.
                 </span>
               </h3>
@@ -233,7 +233,7 @@ function Dashboard({
               <button
                 type="button"
                 onClick={onOpenChat}
-                className="mt-7 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 px-5 py-3 text-sm font-semibold shadow-[0_0_25px_rgba(99,102,241,0.25)] transition duration-200 hover:scale-[1.02]"
+                className="mt-7 rounded-xl bg-linear-to-r from-blue-500 to-purple-500 px-5 py-3 text-sm font-semibold shadow-[0_0_25px_rgba(99,102,241,0.25)] transition duration-200 hover:scale-[1.02]"
               >
                 Start Conversation →
               </button>
@@ -243,7 +243,7 @@ function Dashboard({
 
             {/* Logo */}
             <div className="hidden pr-8 md:block">
-              <div className="flex h-36 w-36 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] shadow-[0_0_60px_rgba(59,130,246,0.12)]">
+              <div className="flex h-36 w-36 items-center justify-center rounded-full border border-white/10 bg-white/3 shadow-[0_0_60px_rgba(59,130,246,0.12)]">
                 <PersonaLogo size="lg" />
               </div>
             </div>
@@ -267,7 +267,7 @@ function Dashboard({
             <button
               type="button"
               onClick={onOpenChat}
-              className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 font-bold shadow-[0_0_20px_rgba(99,102,241,0.35)] transition hover:scale-105"
+              className="flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-r from-blue-500 to-purple-500 font-bold shadow-[0_0_20px_rgba(99,102,241,0.35)] transition hover:scale-105"
             >
               →
             </button>
