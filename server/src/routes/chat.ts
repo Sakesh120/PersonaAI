@@ -12,6 +12,7 @@ router.post("/", async (req, res, next) => {
     if (!message || typeof message !== "string") {
       return res.status(400).json({ error: "message is required" });
     }
+    console.log(message); // for testing
 
     const response = await aiClient.chat({ message, conversationId });
     res.json(response);

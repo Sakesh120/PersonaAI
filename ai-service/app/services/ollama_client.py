@@ -18,7 +18,6 @@ def check_ollama() -> dict:
         response.raise_for_status()
 
         data = response.json()
-
         models = [
             model.get("name")
             for model in data.get("models", [])
@@ -40,10 +39,11 @@ def ask_ollama(message: str) -> str:
     payload = {
         "model": settings.ollama_model,
         "prompt": message,
+        "think": False,
         "stream": False,
         "options": {
             "temperature": settings.temperature
-        }
+        },
     }
 
     response = requests.post(

@@ -89,76 +89,67 @@ function ChatScreen({
     }
   }, [])
 
-  const generateAIResponse = (userMessage: string) => {
-    const text = userMessage.toLowerCase()
 
-    if (text.includes("hello") || text.includes("hi")) {
-      return "Hello! 👋 Nice to talk with you. How can I help you?"
-    }
 
-    if (text.includes("who are you") || text.includes("what are you")) {
-      return "I'm PersonaAI, your personal desktop AI assistant. 🤖"
-    }
+  const handleSendMessage = async () => {
+  const trimmedMessage = message.trim()
 
-    if (text.includes("what can you do")) {
-      return "I can help with questions, coding, ideas, tasks, notes, files, and general conversations."
-    }
-
-    if (text.includes("java")) {
-      return "Java is a popular object-oriented programming language. I can also help you practice Java and DSA. ☕"
-    }
-
-    if (text.includes("dsa")) {
-      return "DSA means Data Structures and Algorithms. We can practice Arrays, Strings, Hashing, Two Pointers, Sliding Window, Linked Lists, Trees and more."
-    }
-
-    if (text.includes("thank")) {
-      return "You're welcome! 😊"
-    }
-
-    if (text.includes("bye")) {
-      return "Goodbye! 👋 See you again."
-    }
-
-    return `I received your message: "${userMessage}". I'm still learning, but I can help you with coding, study, tasks and general questions.`
+  if (!trimmedMessage || isTyping) {
+    return
   }
 
-  const handleSendMessage = () => {
-    const trimmedMessage = message.trim()
+  const userMessage: ChatMessage = {
+    id: Date.now(),
+    sender: "user",
+    text: trimmedMessage,
+  }
 
-    if (!trimmedMessage || isTyping) {
-      return
+  setMessages((previousMessages) => [...previousMessages, userMessage])
+  setMessage("")
+  setIsTyping(true)
+
+  try {
+    const response = await fetch("http://127.0.0.1:3001/api/chats", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: trimmedMessage,
+        conversationId: "default",
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Request failed: ${response.status}`)
     }
 
-    const userMessage: ChatMessage = {
-      id: Date.now(),
-      sender: "user",
-      text: trimmedMessage,
+    const data: { response: string; conversationId: string } =
+      await response.json()
+
+    const aiResponse: ChatMessage = {
+      id: Date.now() + 1,
+      sender: "ai",
+      text: data.response,
     }
+
+    setMessages((previousMessages) => [...previousMessages, aiResponse])
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Could not reach the server."
 
     setMessages((previousMessages) => [
       ...previousMessages,
-      userMessage,
-    ])
-
-    setMessage("")
-    setIsTyping(true)
-
-    setTimeout(() => {
-      const aiResponse: ChatMessage = {
+      {
         id: Date.now() + 1,
         sender: "ai",
-        text: generateAIResponse(trimmedMessage),
-      }
-
-      setMessages((previousMessages) => [
-        ...previousMessages,
-        aiResponse,
-      ])
-
-      setIsTyping(false)
-    }, 700)
+        text: `Sorry, I couldn't get a response. ${errorMessage}`,
+      },
+    ])
+  } finally {
+    setIsTyping(false)
   }
+}
 
   const handleClearChat = () => {
     const confirmed = window.confirm(
