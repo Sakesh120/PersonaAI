@@ -36,6 +36,11 @@ function SignUpScreen({ onLogin, onHome }: SignUpScreenProps) {
       return
     }
 
+    // Save user information locally.
+    // Password is intentionally NOT stored.
+    localStorage.setItem("personaAI_userName", name.trim())
+    localStorage.setItem("personaAI_userEmail", email.trim())
+
     setMessage("Account created successfully! 🎉")
 
     setTimeout(() => {
@@ -132,13 +137,42 @@ function SignUpScreen({ onLogin, onHome }: SignUpScreenProps) {
 
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={
-                  showPassword ? "Hide password" : "Show password"
-                }
-                className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition hover:bg-white/5 hover:text-white"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                title={showPassword ? "Hide password" : "Show password"}
+                className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
               >
-                {showPassword ? "🙈" : "👁️"}
+                {showPassword ? (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="h-[19px] w-[19px]"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M3 3l18 18" />
+                    <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                    <path d="M9.9 4.2A10.8 10.8 0 0 1 12 4c5 0 8.5 4 9.5 8-.5 1-1.4 2.2-2.7 3.2" />
+                    <path d="M6.2 6.2C4.4 7.5 3.2 9.1 2.5 12c1 2 4.5 6 9.5 6 1 0 2-.2 2.9-.5" />
+                  </svg>
+                ) : (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="h-[19px] w-[19px]"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+                    <circle cx="12" cy="12" r="2.5" />
+                  </svg>
+                )}
               </button>
             </div>
           </div>
@@ -160,17 +194,50 @@ function SignUpScreen({ onLogin, onHome }: SignUpScreenProps) {
 
               <button
                 type="button"
-                onClick={() =>
-                  setShowConfirmPassword(!showConfirmPassword)
-                }
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
                 aria-label={
                   showConfirmPassword
                     ? "Hide confirm password"
                     : "Show confirm password"
                 }
-                className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition hover:bg-white/5 hover:text-white"
+                title={
+                  showConfirmPassword
+                    ? "Hide confirm password"
+                    : "Show confirm password"
+                }
+                className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
               >
-                {showConfirmPassword ? "🙈" : "👁️"}
+                {showConfirmPassword ? (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="h-[19px] w-[19px]"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M3 3l18 18" />
+                    <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                    <path d="M9.9 4.2A10.8 10.8 0 0 1 12 4c5 0 8.5 4 9.5 8-.5 1-1.4 2.2-2.7 3.2" />
+                    <path d="M6.2 6.2C4.4 7.5 3.2 9.1 2.5 12c1 2 4.5 6 9.5 6 1 0 2-.2 2.9-.5" />
+                  </svg>
+                ) : (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="h-[19px] w-[19px]"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+                    <circle cx="12" cy="12" r="2.5" />
+                  </svg>
+                )}
               </button>
             </div>
           </div>

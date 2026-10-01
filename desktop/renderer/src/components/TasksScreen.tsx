@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import PersonaLogo from "./PersonaLogo"
 
 interface TasksScreenProps {
   onBackToDashboard: () => void
@@ -64,29 +65,25 @@ function TasksScreen({
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 z-30 h-screen w-64 border-r border-[#263449] bg-[#111827]/95 p-5 backdrop-blur-xl">
 
-        {/* Logo */}
-        <div className="flex items-center gap-3">
+      {/* PersonaAI Branding */}
+      <div className="flex items-center gap-3">
 
-          <div className="relative flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 shadow-[0_0_30px_rgba(59,130,246,0.45)]">
-            <span className="text-xl font-bold">
-              P
-            </span>
+    <PersonaLogo size={52} />
 
-            <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,0.8)]" />
-          </div>
+      <div className="flex flex-col justify-center">
 
-          <div>
-            <h1 className="text-lg font-bold tracking-wide">
-              PersonaAI
-            </h1>
+  <h1 className="text-base font-semibold leading-none tracking-wide">
+    PersonaAI
+  </h1>
 
-            <p className="text-[10px] tracking-[0.25em] text-gray-500">
-              PERSONAL AI
-            </p>
-          </div>
+  <p className="mt-1 text-[9px] leading-none tracking-[0.18em] text-gray-500">
+    PERSONAL AI
+  </p>
 
-        </div>
+</div>
 
+</div>
+    
         {/* Navigation */}
         <nav className="mt-10 space-y-2">
 

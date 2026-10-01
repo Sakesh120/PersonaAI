@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import PersonaLogo from "./PersonaLogo"
 
 interface SavedFile {
   id: string
@@ -159,7 +160,10 @@ function FilesScreen({
   const getFileIcon = (type: string, name: string) => {
     const extension = name.split(".").pop()?.toLowerCase()
 
-    if (type.includes("image") || ["png", "jpg", "jpeg", "webp"].includes(extension || "")) {
+    if (
+      type.includes("image") ||
+      ["png", "jpg", "jpeg", "webp"].includes(extension || "")
+    ) {
       return "🖼️"
     }
 
@@ -209,18 +213,14 @@ function FilesScreen({
 
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <div className="relative flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 shadow-[0_0_30px_rgba(59,130,246,0.45)]">
-            <span className="text-xl font-bold">P</span>
+          <PersonaLogo size={52} />
 
-            <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,0.8)]" />
-          </div>
-
-          <div>
-            <h1 className="text-lg font-bold tracking-wide">
+          <div className="flex flex-col justify-center">
+            <h1 className="text-base font-semibold leading-none tracking-wide">
               PersonaAI
             </h1>
 
-            <p className="text-[10px] tracking-[0.25em] text-gray-500">
+            <p className="mt-1 text-[9px] leading-none tracking-[0.18em] text-gray-500">
               PERSONAL AI
             </p>
           </div>
@@ -229,6 +229,7 @@ function FilesScreen({
         {/* Navigation */}
         <nav className="mt-10 space-y-2">
 
+          {/* Home */}
           <button
             type="button"
             onClick={onBackToDashboard}
@@ -237,9 +238,13 @@ function FilesScreen({
             <span className="text-lg transition-transform group-hover:scale-110">
               ⌂
             </span>
-            <span>Home</span>
+
+            <span>
+              Home
+            </span>
           </button>
 
+          {/* AI Chat */}
           <button
             type="button"
             onClick={onOpenChat}
@@ -248,7 +253,10 @@ function FilesScreen({
             <span className="text-lg transition-transform group-hover:scale-110">
               ◉
             </span>
-            <span>AI Chat</span>
+
+            <span>
+              AI Chat
+            </span>
           </button>
 
           {/* Active Files */}
@@ -259,6 +267,7 @@ function FilesScreen({
             <span className="text-lg">
               ▣
             </span>
+
             <span className="font-medium">
               Files
             </span>
@@ -266,6 +275,7 @@ function FilesScreen({
             <span className="ml-auto h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.9)]" />
           </button>
 
+          {/* Tasks */}
           <button
             type="button"
             onClick={onOpenTasks}
@@ -274,9 +284,13 @@ function FilesScreen({
             <span className="text-lg transition-transform group-hover:scale-110">
               ✓
             </span>
-            <span>Tasks</span>
+
+            <span>
+              Tasks
+            </span>
           </button>
 
+          {/* Settings */}
           <button
             type="button"
             onClick={onOpenSettings}
@@ -285,7 +299,10 @@ function FilesScreen({
             <span className="text-lg transition-transform group-hover:scale-110">
               ⚙
             </span>
-            <span>Settings</span>
+
+            <span>
+              Settings
+            </span>
           </button>
 
         </nav>
@@ -293,6 +310,7 @@ function FilesScreen({
         {/* Sidebar Bottom */}
         <div className="absolute bottom-6 left-5 right-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
           <div className="flex items-center gap-3">
+
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-400/10 text-cyan-300">
               ✦
             </div>
@@ -301,12 +319,15 @@ function FilesScreen({
               <p className="text-xs font-medium text-gray-300">
                 Offline Mode
               </p>
+
               <p className="mt-0.5 text-[10px] text-gray-600">
                 Your files stay private
               </p>
             </div>
+
           </div>
         </div>
+
       </aside>
 
       {/* Main Content */}
@@ -314,6 +335,7 @@ function FilesScreen({
 
         {/* Header */}
         <header className="flex items-start justify-between">
+
           <div>
             <div className="mb-2 flex items-center gap-2 text-xs text-blue-400">
               <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
@@ -339,6 +361,7 @@ function FilesScreen({
               {files.length}
             </p>
           </div>
+
         </header>
 
         {/* Upload Area */}
@@ -381,23 +404,27 @@ function FilesScreen({
               className="hidden"
               onChange={handleBrowserFiles}
             />
+
           </div>
         </div>
 
         {/* File Section */}
         {loading ? (
           <div className="mt-8 rounded-2xl border border-white/10 bg-[#10182B] p-10 text-center">
+
             <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-blue-400/20 border-t-blue-400" />
 
             <p className="mt-4 text-sm text-gray-500">
               Loading files...
             </p>
+
           </div>
         ) : files.length > 0 ? (
           <div className="mt-8">
 
             {/* Section Header */}
             <div className="mb-4 flex items-center justify-between">
+
               <div>
                 <h3 className="text-lg font-semibold">
                   Uploaded Files
@@ -411,10 +438,12 @@ function FilesScreen({
               <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-gray-400">
                 {files.length} file{files.length !== 1 ? "s" : ""}
               </span>
+
             </div>
 
             {/* File Cards */}
             <div className="space-y-3">
+
               {files.map((file) => (
                 <div
                   key={file.id}
@@ -429,11 +458,13 @@ function FilesScreen({
                     </div>
 
                     <div className="min-w-0">
+
                       <p className="truncate font-medium text-gray-200">
                         {file.name}
                       </p>
 
                       <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
+
                         <span>
                           {formatFileSize(file.size)}
                         </span>
@@ -445,7 +476,9 @@ function FilesScreen({
                         <span className="max-w-48 truncate">
                           {file.type || "File"}
                         </span>
+
                       </div>
+
                     </div>
                   </div>
 
@@ -469,8 +502,10 @@ function FilesScreen({
                     </button>
 
                   </div>
+
                 </div>
               ))}
+
             </div>
           </div>
         ) : (
