@@ -1,19 +1,42 @@
 from __future__ import annotations
 
-from fastapi import FastAPI
+import logging
+
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
+import requests
 
 from app.config.settings import settings
+from app.services.ollama_client import (
+    SYSTEM_PROMPT,
+    ask_ollama,
+    chat_ollama,
+    check_ollama,
+    stream_ollama,
+)
 
-from app.services.ollama_client import ask_ollama, check_ollama
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(title="PersonaAI AI Service", version="0.1.0")
+
+# Temporary in-memory history so we can test continuity before Node stores messages.
+# Lost on restart; Node/DB will replace this later.
+_histories: dict[str, list[dict]] = {}
+MAX_HISTORY_MESSAGES = 20
+
+
+class Message(BaseModel):
+    role: str  # "user" or "assistant"
+    content: str
 
 
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1)
     conversationId: str | None = "default"
     context: dict | None = None
+    messages: list[Message] | None = None  # optional history sent by the caller
+    think: bool = False                    # temporary switch for testing Fast vs Think
 
 
 class ChatResponse(BaseModel):
@@ -22,12 +45,25 @@ class ChatResponse(BaseModel):
     route: str = "GENERAL"
     model: str = settings.ollama_model
     sources: list[dict] = []
+    metrics: dict | None = None
+
+def _build_messages(request: ChatRequest, conversation_id: str) -> tuple[list[dict], list[dict]]:
+    if request.messages is not None:
+        history = [m.model_dump() for m in request.messages]
+    else:
+        history = _histories.get(conversation_id, [])
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        *history,
+        {"role": "user", "content": request.message},
+    ]
+    return history, messages
 
 
 @app.get("/api/health")
 async def health() -> dict:
     ollama = check_ollama()
-
     return {
         "ok": True,
         "status": "healthy",
@@ -38,18 +74,73 @@ async def health() -> dict:
 
 
 @app.post("/api/chat")
-async def chat(request: ChatRequest) -> ChatResponse:
+def chat(request: ChatRequest) -> ChatResponse:  # plain def: runs in a thread pool
     if not request.message.strip():
-        raise ValueError("message is required")
+        raise HTTPException(status_code=400, detail="message is required")
 
-    answer = ask_ollama(request.message)    
+    conversation_id = request.conversationId or "default"
+
+    # Caller-supplied history wins; otherwise use what we stored for this conversationId.
+    if request.messages is not None:
+        history = [m.model_dump() for m in request.messages]
+    else:
+        history = _histories.get(conversation_id, [])
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        *history,
+        {"role": "user", "content": request.message},
+    ]
+
+    try:
+        result = chat_ollama(messages, think=request.think)
+    except requests.RequestException as error:
+        raise HTTPException(status_code=502, detail=f"Ollama request failed: {error}")
+
+    answer = result["content"]
+
+    _histories[conversation_id] = [
+        *history,
+        {"role": "user", "content": request.message},
+        {"role": "assistant", "content": answer},
+    ][-MAX_HISTORY_MESSAGES:]
 
     return ChatResponse(
         response=answer,
-        conversationId=request.conversationId or "default",
+        conversationId=conversation_id,
         route="GENERAL",
         model=settings.ollama_model,
-        sources=[]
+        sources=[],
+        metrics=result.get("metrics"),
+    )
+
+
+@app.post("/api/chat/stream")
+async def chat_stream(request: ChatRequest) -> StreamingResponse:
+    if not request.message.strip():
+        raise HTTPException(status_code=400, detail="message is required")
+
+    conversation_id = request.conversationId or "default"
+    history, messages = _build_messages(request, conversation_id)
+
+    async def event_stream():
+        parts: list[str] = []
+        async for chunk in stream_ollama(messages, think=request.think):
+            parts.append(chunk)
+            yield chunk
+
+        answer = "".join(parts)
+        if answer:  # save only after the full reply has streamed
+            _histories[conversation_id] = [
+                *history,
+                {"role": "user", "content": request.message},
+                {"role": "assistant", "content": answer},
+            ][-MAX_HISTORY_MESSAGES:]
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/plain; charset=utf-8",
+        headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"},
     )
 
 
