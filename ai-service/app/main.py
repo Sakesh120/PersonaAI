@@ -130,7 +130,7 @@ async def chat_stream(request: ChatRequest) -> StreamingResponse:
             yield chunk
 
         answer = "".join(parts)
-        if answer:  # save only after the full reply has streamed
+        if answer:
             _histories[conversation_id] = [
                 *history,
                 {"role": "user", "content": request.message},
@@ -140,7 +140,10 @@ async def chat_stream(request: ChatRequest) -> StreamingResponse:
     return StreamingResponse(
         event_stream(),
         media_type="text/plain; charset=utf-8",
-        headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"},
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "X-Accel-Buffering": "no",
+        },
     )
 
 

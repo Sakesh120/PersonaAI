@@ -35,11 +35,14 @@ export class AIServiceClient {
     });
   }
 
-  async chatStream(payload: ChatRequest): Promise<Response> {
+  async streamChat(payload: ChatRequest, signal?: AbortSignal): Promise<Response> {
     return fetch(`${this.baseUrl}/api/chat/stream`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal,
     });
   }
 

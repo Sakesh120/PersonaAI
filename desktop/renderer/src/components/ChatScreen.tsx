@@ -1,7 +1,12 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useSyncExternalStore } from "react"
+import {
+  clearChatMessages,
+  getChatSnapshot,
+  sendChatMessage,
+  subscribeToChat,
+} from "../chat-store"
 
 import PersonaLogo from "./PersonaLogo"
-import { streamChatMessage } from "../services/api"
 
 type SpeechRecognitionResultEvent = {
   results: {
@@ -24,12 +29,6 @@ interface SpeechRecognitionLike {
 
 type SpeechRecognitionConstructor = new () => SpeechRecognitionLike
 
-interface ChatMessage {
-  id: number
-  sender: "user" | "ai"
-  text: string
-}
-
 interface ChatScreenProps {
   onBackToDashboard: () => void
   onOpenSettings: () => void
@@ -46,7 +45,8 @@ function ChatScreen({
   const [message, setMessage] = useState("")
   const [isListening, setIsListening] = useState(false)
   const [voiceError, setVoiceError] = useState("")
-  const [isTyping, setIsTyping] = useState(false)
+
+  // Persist conversation ID (from Code 1)
   const [conversationId, setConversationId] = useState(() => {
     const savedId = localStorage.getItem("personaAI_conversationId")
     if (savedId) return savedId
@@ -56,30 +56,20 @@ function ChatScreen({
     return newId
   })
 
-  const [messages, setMessages] = useState<ChatMessage[]>(() => {
-    const savedMessages = localStorage.getItem("personaAI_chat")
-
-    if (savedMessages) {
-      try {
-        const parsedMessages = JSON.parse(savedMessages)
-
-        if (Array.isArray(parsedMessages)) {
-          return parsedMessages
-        }
-
-        return []
-      } catch {
-        return []
-      }
-    }
-
-    return []
-  })
+  // External store subscription for streaming (from Code 2)
+  const { messages, isTyping, hasStartedStreaming } = useSyncExternalStore(
+    subscribeToChat,
+    getChatSnapshot,
+    getChatSnapshot
+  )
 
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
 
+  // Persist messages to local storage as backup (from Code 1)
   useEffect(() => {
-    localStorage.setItem("personaAI_chat", JSON.stringify(messages))
+    if (messages.length > 0) {
+      localStorage.setItem("personaAI_chat", JSON.stringify(messages))
+    }
   }, [messages])
 
   useEffect(() => {
@@ -95,57 +85,9 @@ function ChatScreen({
       return
     }
 
-    const userMessage: ChatMessage = {
-      id: Date.now(),
-      sender: "user",
-      text: trimmedMessage,
-    }
-
-    setMessages((previousMessages) => [
-      ...previousMessages,
-      userMessage,
-    ])
-
     setMessage("")
-    setIsTyping(true)
-    const responseId = Date.now() + 1
-    let receivedText = false
-
-    try {
-      await streamChatMessage(trimmedMessage, conversationId, (chunk) => {
-        receivedText = true
-        setMessages((previousMessages) => {
-          const existingResponse = previousMessages.some((item) => item.id === responseId)
-          if (existingResponse) {
-            return previousMessages.map((item) => item.id === responseId
-              ? { ...item, text: item.text + chunk }
-              : item)
-          }
-          return [...previousMessages, { id: responseId, sender: "ai", text: chunk }]
-        })
-      })
-
-      if (!receivedText) {
-        setMessages((previousMessages) => [...previousMessages, {
-          id: responseId,
-          sender: "ai",
-          text: "The AI service returned an empty response.",
-        }])
-      }
-    } catch (error) {
-      const errorText = `I couldn't reach the AI service. ${error instanceof Error ? error.message : "Check that the Node backend and AI service are running."}`
-      setMessages((previousMessages) => {
-        const existingResponse = previousMessages.some((item) => item.id === responseId)
-        if (existingResponse) {
-          return previousMessages.map((item) => item.id === responseId
-            ? { ...item, text: `${item.text}\n\n[Stream interrupted: ${errorText}]` }
-            : item)
-        }
-        return [...previousMessages, { id: responseId, sender: "ai", text: errorText }]
-      })
-    } finally {
-      setIsTyping(false)
-    }
+    // Send message using store but passing conversationId
+    void sendChatMessage(trimmedMessage, conversationId)
   }
 
   const handleClearChat = () => {
@@ -157,11 +99,19 @@ function ChatScreen({
       return
     }
 
-    setMessages([])
+    // Code 1: Wipe local storage & generate new conversation ID
     localStorage.removeItem("personaAI_chat")
     const newConversationId = crypto.randomUUID()
     setConversationId(newConversationId)
     localStorage.setItem("personaAI_conversationId", newConversationId)
+
+    // Code 2: Clear store and inject welcome message
+    const welcomeMessage = {
+      id: Date.now(),
+      sender: "ai" as const,
+      text: "Chat cleared successfully. 👋 How can I help you?",
+    }
+    clearChatMessages(welcomeMessage)
   }
 
   const handleKeyDown = (
@@ -257,105 +207,64 @@ function ChatScreen({
         {/* Navigation */}
         <nav className="mt-10 space-y-2">
 
-          {/* Home */}
           <button
             type="button"
             onClick={onBackToDashboard}
             className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-gray-400 transition-all duration-200 hover:bg-white/5 hover:text-white"
           >
-            <span className="text-lg transition-transform group-hover:scale-110">
-              ⌂
-            </span>
-
-            <span>
-              Home
-            </span>
+            <span className="text-lg transition-transform group-hover:scale-110">⌂</span>
+            <span>Home</span>
           </button>
 
-          {/* Active Chat */}
           <button
             type="button"
             className="flex w-full items-center gap-3 rounded-xl border border-sky-500/20 bg-[#162033] px-4 py-3 text-left text-sky-300 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.04)]"
           >
-            <span className="text-lg">
-              ◉
-            </span>
-
-            <span className="font-medium">
-              AI Chat
-            </span>
-
+            <span className="text-lg">◉</span>
+            <span className="font-medium">AI Chat</span>
             <span className="ml-auto h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.9)]" />
           </button>
 
-          {/* Files */}
           <button
             type="button"
             onClick={onOpenFiles}
             className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-gray-400 transition-all duration-200 hover:bg-white/5 hover:text-white"
           >
-            <span className="text-lg transition-transform group-hover:scale-110">
-              ▣
-            </span>
-
-            <span>
-              Files
-            </span>
+            <span className="text-lg transition-transform group-hover:scale-110">▣</span>
+            <span>Files</span>
           </button>
 
-          {/* Tasks */}
           <button
             type="button"
             onClick={onOpenTasks}
             className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-gray-400 transition-all duration-200 hover:bg-white/5 hover:text-white"
           >
-            <span className="text-lg transition-transform group-hover:scale-110">
-              ✓
-            </span>
-
-            <span>
-              Tasks
-            </span>
+            <span className="text-lg transition-transform group-hover:scale-110">✓</span>
+            <span>Tasks</span>
           </button>
 
-          {/* Settings */}
           <button
             type="button"
             onClick={onOpenSettings}
             className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-gray-400 transition-all duration-200 hover:bg-white/5 hover:text-white"
           >
-            <span className="text-lg transition-transform group-hover:scale-110">
-              ⚙
-            </span>
-
-            <span>
-              Settings
-            </span>
+            <span className="text-lg transition-transform group-hover:scale-110">⚙</span>
+            <span>Settings</span>
           </button>
 
         </nav>
 
         {/* Sidebar Bottom */}
         <div className="absolute bottom-6 left-5 right-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-
           <div className="flex items-center gap-3">
-
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-400/10 text-blue-300">
               ✦
             </div>
-
             <div>
-              <p className="text-xs font-medium text-gray-300">
-                PersonaAI
-              </p>
-
-              <p className="mt-0.5 text-[10px] text-gray-600">
-                Your personal assistant
-              </p>
+              <p className="text-xs font-medium text-gray-300">PersonaAI</p>
+              <p className="mt-0.5 text-[10px] text-gray-600">Your personal assistant</p>
             </div>
-
           </div>
-
         </div>
 
       </aside>
@@ -367,34 +276,20 @@ function ChatScreen({
         <header className="flex shrink-0 items-center justify-between border-b border-[#263449] bg-[#0F172A]/80 px-8 py-5 backdrop-blur-xl">
 
           <div className="flex items-center gap-4">
-
             <div className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-blue-400/10 bg-gradient-to-br from-blue-500/15 to-purple-500/10">
-
               <PersonaLogo size="sm" />
-
               <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0B1222] bg-emerald-400" />
-
             </div>
-
             <div>
-              <h2 className="text-xl font-bold">
-                AI Chat
-              </h2>
-
+              <h2 className="text-xl font-bold">AI Chat</h2>
               <div className="mt-1 flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-
-                <p className="text-xs text-gray-500">
-                  Personal AI Assistant
-                </p>
+                <p className="text-xs text-gray-500">Personal AI Assistant</p>
               </div>
             </div>
-
           </div>
 
           <div className="flex items-center gap-3">
-
-            {/* Clear Chat */}
             <button
               type="button"
               onClick={handleClearChat}
@@ -402,8 +297,6 @@ function ChatScreen({
             >
               Clear Chat
             </button>
-
-            {/* Dashboard */}
             <button
               type="button"
               onClick={onBackToDashboard}
@@ -411,31 +304,26 @@ function ChatScreen({
             >
               ← Dashboard
             </button>
-
           </div>
 
         </header>
 
-        {/* Messages */}
+        {/* Messages Container */}
         <div className="flex-1 overflow-y-auto px-8 py-8">
 
           {messages.length === 0 && !isTyping ? (
-            /* Empty Chat Welcome */
+            /* Empty Chat Welcome (From Code 1) */
             <div className="flex h-full items-center justify-center">
               <div className="text-center">
-
                 <h1 className="text-3xl font-semibold tracking-tight text-slate-100">
                   Hello, How can I help you?
                 </h1>
-
                 <p className="mt-3 text-sm text-slate-500">
                   Start a conversation with PersonaAI
                 </p>
-
               </div>
             </div>
           ) : (
-            /* Chat Messages */
             <div className="mx-auto max-w-4xl space-y-6">
 
               {messages.map((chatMessage) => (
@@ -455,7 +343,7 @@ function ChatScreen({
                     </div>
                   )}
 
-                  {/* Message */}
+                  {/* Message Bubble */}
                   <div
                     className={
                       chatMessage.sender === "user"
@@ -463,48 +351,48 @@ function ChatScreen({
                         : "max-w-xl rounded-2xl rounded-tl-md border border-[#263449] bg-[#111827] px-5 py-4 shadow-[0_10px_22px_rgba(15,23,42,0.18)]"
                     }
                   >
-
-                    <p
-                      className={
-                        chatMessage.sender === "user"
-                          ? "text-sm leading-6 text-white"
-                          : "text-sm leading-6 text-gray-300"
-                      }
-                    >
-                      {chatMessage.text}
-                    </p>
-
+                    {/* Inline Typing Indicator (From Code 2) */}
+                    {chatMessage.sender === "ai" &&
+                    !chatMessage.text &&
+                    isTyping &&
+                    !hasStartedStreaming ? (
+                      <div className="flex items-center gap-1.5" aria-label="Assistant is responding">
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-blue-400" />
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-blue-400 [animation-delay:150ms]" />
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-purple-400 [animation-delay:300ms]" />
+                      </div>
+                    ) : (
+                      <p
+                        className={
+                          chatMessage.sender === "user"
+                            ? "text-sm leading-6 text-white"
+                            : "text-sm leading-6 text-gray-300"
+                        }
+                      >
+                        {chatMessage.text}
+                      </p>
+                    )}
                   </div>
 
                 </div>
               ))}
 
-              {/* AI Typing */}
-              {isTyping && (
+              {/* Standalone Typing Indicator (Fallback if Store hasn't created empty message yet) */}
+              {/* {isTyping && !messages.some(m => m.sender === "ai" && !m.text) && (
                 <div className="flex items-start gap-3">
-
                   <PersonaLogo size="sm" />
-
                   <div className="rounded-2xl rounded-tl-md border border-white/10 bg-[#10182B] px-5 py-4">
-
                     <div className="flex items-center gap-1.5">
-
                       <span className="h-2 w-2 animate-bounce rounded-full bg-blue-400" />
-
                       <span className="h-2 w-2 animate-bounce rounded-full bg-blue-400 [animation-delay:150ms]" />
-
                       <span className="h-2 w-2 animate-bounce rounded-full bg-purple-400 [animation-delay:300ms]" />
-
                     </div>
-
                   </div>
-
                 </div>
-              )}
+              )} */}
 
             </div>
           )}
-
         </div>
 
         {/* Input Area */}
@@ -526,85 +414,40 @@ function ChatScreen({
                   className="flex-1 bg-transparent px-4 py-3 text-sm text-slate-50 outline-none placeholder:text-slate-500"
                 />
 
-                {/* Microphone */}
+                {/* Microphone (Uses Code 2 Styles + Code 1 SVGs) */}
                 <button
                   type="button"
                   onClick={handleMicrophone}
-                  aria-label={
+                  aria-label={isListening ? "Stop voice typing" : "Start voice typing"}
+                  title={isListening ? "Stop voice typing" : "Start voice typing"}
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-all duration-200 ${
                     isListening
-                      ? "Stop voice typing"
-                      : "Start voice typing"
-                  }
-                  title={
-                    isListening
-                      ? "Stop voice typing"
-                      : "Start voice typing"
-                  }
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${
-                    isListening
-                      ? "bg-red-500/15 text-red-300 hover:bg-red-500/25"
-                      : "text-gray-400 hover:bg-white/[0.08] hover:text-white"
+                      ? "border-red-400/40 bg-red-500/15 text-red-300 shadow-[0_0_15px_rgba(248,113,113,0.15)]"
+                      : "border-white/10 bg-white/[0.04] text-gray-400 hover:bg-white/[0.08] hover:text-white"
                   }`}
                 >
                   {isListening ? (
-                    <svg
-                      aria-hidden="true"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      className="h-5 w-5"
-                    >
-                      <rect
-                        x="7"
-                        y="7"
-                        width="10"
-                        height="10"
-                        rx="2"
-                        fill="currentColor"
-                      />
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+                      <rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor" />
                     </svg>
                   ) : (
-                    <svg
-                      aria-hidden="true"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      className="h-5 w-5"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <rect
-                        x="9"
-                        y="3"
-                        width="6"
-                        height="12"
-                        rx="3"
-                      />
-
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="9" y="3" width="6" height="12" rx="3" />
                       <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 18v3m-4 0h8" />
                     </svg>
                   )}
                 </button>
 
-                {/* Send */}
+                {/* Send (Uses Code 2 Styles + Code 1 SVG) */}
                 <button
                   type="button"
                   onClick={handleSendMessage}
                   disabled={!message.trim() || isTyping}
                   aria-label="Send message"
                   title="Send message"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-slate-900 transition-colors duration-200 hover:bg-slate-200 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.25)] transition-all duration-200 hover:scale-105 hover:shadow-[0_0_25px_rgba(99,102,241,0.35)] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:scale-100"
                 >
-                  <svg
-                    aria-hidden="true"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    className="h-5 w-5"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 19V5m-7 7 7-7 7 7" />
                   </svg>
                 </button>
