@@ -35,6 +35,14 @@ export class AIServiceClient {
     });
   }
 
+  async chatStream(payload: ChatRequest): Promise<Response> {
+    return fetch(`${this.baseUrl}/api/chat/stream`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+  }
+
   async uploadDocument(payload: { name: string; buffer: Buffer }): Promise<{ id: string; name: string; createdAt: string }> {
     const formData = new FormData();
     const fileBlob = new Blob([new Uint8Array(payload.buffer)], { type: "application/octet-stream" });

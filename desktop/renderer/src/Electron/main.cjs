@@ -4,6 +4,23 @@ const fs = require("fs")
 
 const FILES_DIR = path.join(app.getPath("userData"), "PersonaAI-Files")
 const FILES_DB = path.join(FILES_DIR, "files.json")
+const API_BASE_URL = (process.env.PERSONA_API_URL || process.env.VITE_API_URL || "http://127.0.0.1:3001").replace(/\/$/, "")
+
+async function indexDocument(filePath) {
+  const formData = new FormData()
+  const contents = fs.readFileSync(filePath)
+  formData.append("file", new Blob([contents]), path.basename(filePath))
+
+  const response = await fetch(`${API_BASE_URL}/api/documents/upload`, {
+    method: "POST",
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const responseText = await response.text()
+    throw new Error(responseText || `Upload failed (${response.status})`)
+  }
+}
 
 function ensureStorage() {
   if (!fs.existsSync(FILES_DIR)) {
@@ -96,6 +113,13 @@ ipcMain.handle("files:select", async () => {
         type: path.extname(originalName).toLowerCase(),
         path: destinationPath,
         uploadedAt: new Date().toISOString(),
+      }
+
+      try {
+        await indexDocument(destinationPath)
+        fileInfo.indexed = true
+      } catch (error) {
+        fileInfo.indexingError = error.message || "Document indexing failed"
       }
 
       currentFiles.push(fileInfo)

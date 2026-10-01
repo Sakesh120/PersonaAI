@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import PersonaLogo from "./PersonaLogo"
+import { listDocuments, uploadDocument } from "../services/api"
 
 interface SavedFile {
   id: string
@@ -9,6 +10,9 @@ interface SavedFile {
   type: string
   path: string
   uploadedAt: string
+  indexed?: boolean
+  indexingError?: string
+  remote?: boolean
 }
 
 interface FilesScreenProps {
@@ -26,21 +30,41 @@ function FilesScreen({
 }: FilesScreenProps) {
   const [files, setFiles] = useState<SavedFile[]>([])
   const [loading, setLoading] = useState(true)
+  const [serviceError, setServiceError] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load saved files
   useEffect(() => {
     const loadFiles = async () => {
-      if (!window.electronAPI?.isElectron) {
-        setLoading(false)
-        return
+      let savedFiles: SavedFile[] = []
+      try {
+        if (window.electronAPI?.isElectron) {
+          savedFiles = await window.electronAPI.getFiles()
+        }
+      } catch (error) {
+        console.error("Could not load files:", error)
       }
 
       try {
-        const savedFiles = await window.electronAPI.getFiles()
-        setFiles(savedFiles)
+        const documents = await listDocuments()
+        const savedNames = new Set(savedFiles.map((file) => file.name))
+        const remoteFiles: SavedFile[] = documents
+          .filter((document) => !savedNames.has(document.name))
+          .map((document) => ({
+            id: document.id,
+            name: document.name,
+            storedName: document.name,
+            size: 0,
+            type: "Indexed document",
+            path: "",
+            uploadedAt: document.createdAt,
+            indexed: true,
+            remote: true,
+          }))
+        setFiles([...savedFiles, ...remoteFiles])
       } catch (error) {
-        console.error("Could not load files:", error)
+        setFiles(savedFiles)
+        setServiceError(error instanceof Error ? error.message : "Could not load indexed documents.")
       } finally {
         setLoading(false)
       }
@@ -68,24 +92,40 @@ function FilesScreen({
   }
 
   // Browser file selection
-  const handleBrowserFiles = (
+  const handleBrowserFiles = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const selectedFiles = Array.from(event.target.files ?? [])
 
     if (selectedFiles.length > 0) {
-      setFiles((previousFiles) => [
-        ...previousFiles,
-        ...selectedFiles.map((file) => ({
-          id: `${file.name}-${file.lastModified}-${crypto.randomUUID()}`,
-          name: file.name,
-          storedName: file.name,
-          size: file.size,
-          type: file.type || "File",
-          path: URL.createObjectURL(file),
-          uploadedAt: new Date().toISOString(),
-        })),
-      ])
+      const localFiles = selectedFiles.map((file) => ({
+        id: `${file.name}-${file.lastModified}-${crypto.randomUUID()}`,
+        name: file.name,
+        storedName: file.name,
+        size: file.size,
+        type: file.type || "File",
+        path: URL.createObjectURL(file),
+        uploadedAt: new Date().toISOString(),
+      }))
+      setFiles((previousFiles) => [...previousFiles, ...localFiles])
+
+      await Promise.all(selectedFiles.map(async (file, index) => {
+        const localFile = localFiles[index]
+        try {
+          const document = await uploadDocument(file)
+          setFiles((previousFiles) => previousFiles.map((item) =>
+            item.id === localFile.id
+              ? { ...item, id: document.id, indexed: true }
+              : item
+          ))
+        } catch (error) {
+          setFiles((previousFiles) => previousFiles.map((item) =>
+            item.id === localFile.id
+              ? { ...item, indexingError: error instanceof Error ? error.message : "Upload failed." }
+              : item
+          ))
+        }
+      }))
     }
 
     event.target.value = ""
@@ -93,6 +133,10 @@ function FilesScreen({
 
   // Remove file
   const handleRemoveFile = async (id: string) => {
+    if (files.find((file) => file.id === id)?.remote) {
+      return
+    }
+
     if (!window.electronAPI?.isElectron) {
       setFiles((previousFiles) => {
         const file = previousFiles.find((item) => item.id === id)
@@ -122,6 +166,10 @@ function FilesScreen({
 
   // Open file
   const handleOpenFile = async (id: string) => {
+    if (!files.find((file) => file.id === id)?.path) {
+      return
+    }
+
     if (!window.electronAPI?.isElectron) {
       const file = files.find((item) => item.id === id)
 
@@ -397,6 +445,12 @@ function FilesScreen({
               Multiple files supported
             </p>
 
+            {serviceError && (
+              <p role="alert" className="mt-3 text-sm text-amber-300">
+                Document service unavailable: {serviceError}
+              </p>
+            )}
+
             <input
               ref={fileInputRef}
               type="file"
@@ -477,6 +531,10 @@ function FilesScreen({
                           {file.type || "File"}
                         </span>
 
+                        <span title={file.indexingError} className={file.indexed || file.remote ? "text-emerald-400" : file.indexingError ? "text-amber-300" : "text-gray-500"}>
+                          {file.indexed ? "Uploaded" : file.indexingError ? "Upload failed" : file.remote ? "On AI service" : "Saved locally"}
+                        </span>
+
                       </div>
 
                     </div>
@@ -488,7 +546,8 @@ function FilesScreen({
                     <button
                       type="button"
                       onClick={() => handleOpenFile(file.id)}
-                      className="rounded-xl border border-blue-400/10 bg-blue-500/5 px-4 py-2 text-sm text-blue-400 transition-all duration-200 hover:bg-blue-500/15 hover:text-blue-300"
+                      disabled={!file.path}
+                      className="rounded-xl border border-blue-400/10 bg-blue-500/5 px-4 py-2 text-sm text-blue-400 transition-all duration-200 hover:bg-blue-500/15 hover:text-blue-300 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       Open
                     </button>
@@ -496,7 +555,8 @@ function FilesScreen({
                     <button
                       type="button"
                       onClick={() => handleRemoveFile(file.id)}
-                      className="rounded-xl border border-red-400/10 bg-red-500/5 px-4 py-2 text-sm text-red-400 transition-all duration-200 hover:bg-red-500/15 hover:text-red-300"
+                      disabled={file.remote}
+                      className="rounded-xl border border-red-400/10 bg-red-500/5 px-4 py-2 text-sm text-red-400 transition-all duration-200 hover:bg-red-500/15 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       Remove
                     </button>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 
 import PersonaLogo from "./PersonaLogo"
+import { streamChatMessage } from "../services/api"
 
 type SpeechRecognitionResultEvent = {
   results: {
@@ -46,6 +47,14 @@ function ChatScreen({
   const [isListening, setIsListening] = useState(false)
   const [voiceError, setVoiceError] = useState("")
   const [isTyping, setIsTyping] = useState(false)
+  const [conversationId, setConversationId] = useState(() => {
+    const savedId = localStorage.getItem("personaAI_conversationId")
+    if (savedId) return savedId
+
+    const newId = crypto.randomUUID()
+    localStorage.setItem("personaAI_conversationId", newId)
+    return newId
+  })
 
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     const savedMessages = localStorage.getItem("personaAI_chat")
@@ -79,41 +88,7 @@ function ChatScreen({
     }
   }, [])
 
-  const generateAIResponse = (userMessage: string) => {
-    const text = userMessage.toLowerCase()
-
-    if (text.includes("hello") || text.includes("hi")) {
-      return "Hello! 👋 Nice to talk with you. How can I help you?"
-    }
-
-    if (text.includes("who are you") || text.includes("what are you")) {
-      return "I'm PersonaAI, your personal desktop AI assistant. 🤖"
-    }
-
-    if (text.includes("what can you do")) {
-      return "I can help with questions, coding, ideas, tasks, notes, and general conversations."
-    }
-
-    if (text.includes("java")) {
-      return "Java is a popular object-oriented programming language. I can also help you practice Java and DSA. ☕"
-    }
-
-    if (text.includes("dsa")) {
-      return "DSA means Data Structures and Algorithms. We can practice Arrays, Strings, Hashing, Two Pointers, Sliding Window, Linked Lists, Trees and more."
-    }
-
-    if (text.includes("thank")) {
-      return "You're welcome! 😊"
-    }
-
-    if (text.includes("bye")) {
-      return "Goodbye! 👋 See you again."
-    }
-
-    return `I received your message: "${userMessage}". I'm still learning, but I can help you with coding, study, tasks and general questions.`
-  }
-
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     const trimmedMessage = message.trim()
 
     if (!trimmedMessage || isTyping) {
@@ -133,21 +108,44 @@ function ChatScreen({
 
     setMessage("")
     setIsTyping(true)
+    const responseId = Date.now() + 1
+    let receivedText = false
 
-    setTimeout(() => {
-      const aiResponse: ChatMessage = {
-        id: Date.now() + 1,
-        sender: "ai",
-        text: generateAIResponse(trimmedMessage),
+    try {
+      await streamChatMessage(trimmedMessage, conversationId, (chunk) => {
+        receivedText = true
+        setMessages((previousMessages) => {
+          const existingResponse = previousMessages.some((item) => item.id === responseId)
+          if (existingResponse) {
+            return previousMessages.map((item) => item.id === responseId
+              ? { ...item, text: item.text + chunk }
+              : item)
+          }
+          return [...previousMessages, { id: responseId, sender: "ai", text: chunk }]
+        })
+      })
+
+      if (!receivedText) {
+        setMessages((previousMessages) => [...previousMessages, {
+          id: responseId,
+          sender: "ai",
+          text: "The AI service returned an empty response.",
+        }])
       }
-
-      setMessages((previousMessages) => [
-        ...previousMessages,
-        aiResponse,
-      ])
-
+    } catch (error) {
+      const errorText = `I couldn't reach the AI service. ${error instanceof Error ? error.message : "Check that the Node backend and AI service are running."}`
+      setMessages((previousMessages) => {
+        const existingResponse = previousMessages.some((item) => item.id === responseId)
+        if (existingResponse) {
+          return previousMessages.map((item) => item.id === responseId
+            ? { ...item, text: `${item.text}\n\n[Stream interrupted: ${errorText}]` }
+            : item)
+        }
+        return [...previousMessages, { id: responseId, sender: "ai", text: errorText }]
+      })
+    } finally {
       setIsTyping(false)
-    }, 700)
+    }
   }
 
   const handleClearChat = () => {
@@ -161,6 +159,9 @@ function ChatScreen({
 
     setMessages([])
     localStorage.removeItem("personaAI_chat")
+    const newConversationId = crypto.randomUUID()
+    setConversationId(newConversationId)
+    localStorage.setItem("personaAI_conversationId", newConversationId)
   }
 
   const handleKeyDown = (
