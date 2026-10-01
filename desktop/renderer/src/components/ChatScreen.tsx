@@ -52,29 +52,19 @@ function ChatScreen({
 
     if (savedMessages) {
       try {
-        return JSON.parse(savedMessages)
+        const parsedMessages = JSON.parse(savedMessages)
+
+        if (Array.isArray(parsedMessages)) {
+          return parsedMessages
+        }
+
+        return []
       } catch {
         return []
       }
     }
 
-    return [
-      {
-        id: 1,
-        sender: "ai",
-        text: "Hello! 👋 I'm PersonaAI. How can I help you today?",
-      },
-      {
-        id: 2,
-        sender: "user",
-        text: "Tell me what you can do.",
-      },
-      {
-        id: 3,
-        sender: "ai",
-        text: "I can help you answer questions, write content, solve problems, organize tasks, and have conversations with you.",
-      },
-    ]
+    return []
   })
 
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
@@ -89,67 +79,76 @@ function ChatScreen({
     }
   }, [])
 
+  const generateAIResponse = (userMessage: string) => {
+    const text = userMessage.toLowerCase()
 
-
-  const handleSendMessage = async () => {
-  const trimmedMessage = message.trim()
-
-  if (!trimmedMessage || isTyping) {
-    return
-  }
-
-  const userMessage: ChatMessage = {
-    id: Date.now(),
-    sender: "user",
-    text: trimmedMessage,
-  }
-
-  setMessages((previousMessages) => [...previousMessages, userMessage])
-  setMessage("")
-  setIsTyping(true)
-
-  try {
-    const response = await fetch("http://127.0.0.1:3001/api/chats", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: trimmedMessage,
-        conversationId: "default",
-      }),
-    })
-
-    if (!response.ok) {
-      throw new Error(`Request failed: ${response.status}`)
+    if (text.includes("hello") || text.includes("hi")) {
+      return "Hello! 👋 Nice to talk with you. How can I help you?"
     }
 
-    const data: { response: string; conversationId: string } =
-      await response.json()
-
-    const aiResponse: ChatMessage = {
-      id: Date.now() + 1,
-      sender: "ai",
-      text: data.response,
+    if (text.includes("who are you") || text.includes("what are you")) {
+      return "I'm PersonaAI, your personal desktop AI assistant. 🤖"
     }
 
-    setMessages((previousMessages) => [...previousMessages, aiResponse])
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Could not reach the server."
+    if (text.includes("what can you do")) {
+      return "I can help with questions, coding, ideas, tasks, notes, and general conversations."
+    }
+
+    if (text.includes("java")) {
+      return "Java is a popular object-oriented programming language. I can also help you practice Java and DSA. ☕"
+    }
+
+    if (text.includes("dsa")) {
+      return "DSA means Data Structures and Algorithms. We can practice Arrays, Strings, Hashing, Two Pointers, Sliding Window, Linked Lists, Trees and more."
+    }
+
+    if (text.includes("thank")) {
+      return "You're welcome! 😊"
+    }
+
+    if (text.includes("bye")) {
+      return "Goodbye! 👋 See you again."
+    }
+
+    return `I received your message: "${userMessage}". I'm still learning, but I can help you with coding, study, tasks and general questions.`
+  }
+
+  const handleSendMessage = () => {
+    const trimmedMessage = message.trim()
+
+    if (!trimmedMessage || isTyping) {
+      return
+    }
+
+    const userMessage: ChatMessage = {
+      id: Date.now(),
+      sender: "user",
+      text: trimmedMessage,
+    }
 
     setMessages((previousMessages) => [
       ...previousMessages,
-      {
+      userMessage,
+    ])
+
+    setMessage("")
+    setIsTyping(true)
+
+    setTimeout(() => {
+      const aiResponse: ChatMessage = {
         id: Date.now() + 1,
         sender: "ai",
-        text: `Sorry, I couldn't get a response. ${errorMessage}`,
-      },
-    ])
-  } finally {
-    setIsTyping(false)
+        text: generateAIResponse(trimmedMessage),
+      }
+
+      setMessages((previousMessages) => [
+        ...previousMessages,
+        aiResponse,
+      ])
+
+      setIsTyping(false)
+    }, 700)
   }
-}
 
   const handleClearChat = () => {
     const confirmed = window.confirm(
@@ -160,13 +159,7 @@ function ChatScreen({
       return
     }
 
-    const welcomeMessage: ChatMessage = {
-      id: Date.now(),
-      sender: "ai",
-      text: "Chat cleared successfully. 👋 How can I help you?",
-    }
-
-    setMessages([welcomeMessage])
+    setMessages([])
     localStorage.removeItem("personaAI_chat")
   }
 
@@ -247,14 +240,14 @@ function ChatScreen({
 
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <PersonaLogo />
+          <PersonaLogo size={52} />
 
-          <div>
-            <h1 className="text-lg font-bold tracking-wide">
+          <div className="flex flex-col justify-center">
+            <h1 className="text-base font-semibold leading-none tracking-wide">
               PersonaAI
             </h1>
 
-            <p className="text-[10px] tracking-[0.25em] text-gray-500">
+            <p className="mt-1 text-[12px] leading-none tracking-[0.2em] text-gray-500">
               PERSONAL AI
             </p>
           </div>
@@ -375,9 +368,11 @@ function ChatScreen({
           <div className="flex items-center gap-4">
 
             <div className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-blue-400/10 bg-gradient-to-br from-blue-500/15 to-purple-500/10">
+
               <PersonaLogo size="sm" />
 
               <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0B1222] bg-emerald-400" />
+
             </div>
 
             <div>
@@ -423,73 +418,91 @@ function ChatScreen({
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-8 py-8">
 
-          <div className="mx-auto max-w-4xl space-y-6">
+          {messages.length === 0 && !isTyping ? (
+            /* Empty Chat Welcome */
+            <div className="flex h-full items-center justify-center">
+              <div className="text-center">
 
-            {messages.map((chatMessage) => (
-              <div
-                key={chatMessage.id}
-                className={
-                  chatMessage.sender === "user"
-                    ? "flex justify-end"
-                    : "flex items-start gap-3"
-                }
-              >
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-100">
+                  Hello, How can I help you?
+                </h1>
 
-                {/* AI Avatar */}
-                {chatMessage.sender === "ai" && (
-                  <div className="shrink-0">
-                    <PersonaLogo size="sm" />
-                  </div>
-                )}
+                <p className="mt-3 text-sm text-slate-500">
+                  Start a conversation with PersonaAI
+                </p>
 
-                {/* Message */}
+              </div>
+            </div>
+          ) : (
+            /* Chat Messages */
+            <div className="mx-auto max-w-4xl space-y-6">
+
+              {messages.map((chatMessage) => (
                 <div
+                  key={chatMessage.id}
                   className={
                     chatMessage.sender === "user"
-                      ? "max-w-xl rounded-2xl rounded-tr-md bg-[#2563EB] px-5 py-4 shadow-[0_10px_22px_rgba(37,99,235,0.18)]"
-                      : "max-w-xl rounded-2xl rounded-tl-md border border-[#263449] bg-[#111827] px-5 py-4 shadow-[0_10px_22px_rgba(15,23,42,0.18)]"
+                      ? "flex justify-end"
+                      : "flex items-start gap-3"
                   }
                 >
 
-                  <p
+                  {/* AI Avatar */}
+                  {chatMessage.sender === "ai" && (
+                    <div className="shrink-0">
+                      <PersonaLogo size="sm" />
+                    </div>
+                  )}
+
+                  {/* Message */}
+                  <div
                     className={
                       chatMessage.sender === "user"
-                        ? "text-sm leading-6 text-white"
-                        : "text-sm leading-6 text-gray-300"
+                        ? "max-w-xl rounded-2xl rounded-tr-md bg-[#2563EB] px-5 py-4 shadow-[0_10px_22px_rgba(37,99,235,0.18)]"
+                        : "max-w-xl rounded-2xl rounded-tl-md border border-[#263449] bg-[#111827] px-5 py-4 shadow-[0_10px_22px_rgba(15,23,42,0.18)]"
                     }
                   >
-                    {chatMessage.text}
-                  </p>
 
-                </div>
-
-              </div>
-            ))}
-
-            {/* AI Typing */}
-            {isTyping && (
-              <div className="flex items-start gap-3">
-
-                <PersonaLogo size="sm" />
-
-                <div className="rounded-2xl rounded-tl-md border border-white/10 bg-[#10182B] px-5 py-4">
-
-                  <div className="flex items-center gap-1.5">
-
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-blue-400" />
-
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-blue-400 [animation-delay:150ms]" />
-
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-purple-400 [animation-delay:300ms]" />
+                    <p
+                      className={
+                        chatMessage.sender === "user"
+                          ? "text-sm leading-6 text-white"
+                          : "text-sm leading-6 text-gray-300"
+                      }
+                    >
+                      {chatMessage.text}
+                    </p>
 
                   </div>
 
                 </div>
+              ))}
 
-              </div>
-            )}
+              {/* AI Typing */}
+              {isTyping && (
+                <div className="flex items-start gap-3">
 
-          </div>
+                  <PersonaLogo size="sm" />
+
+                  <div className="rounded-2xl rounded-tl-md border border-white/10 bg-[#10182B] px-5 py-4">
+
+                    <div className="flex items-center gap-1.5">
+
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-blue-400" />
+
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-blue-400 [animation-delay:150ms]" />
+
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-purple-400 [animation-delay:300ms]" />
+
+                    </div>
+
+                  </div>
+
+                </div>
+              )}
+
+            </div>
+          )}
 
         </div>
 
@@ -526,13 +539,50 @@ function ChatScreen({
                       ? "Stop voice typing"
                       : "Start voice typing"
                   }
-                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border text-lg transition-all duration-200 ${
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${
                     isListening
-                      ? "border-red-400/40 bg-red-500/15 text-red-300 shadow-[0_0_15px_rgba(248,113,113,0.15)]"
-                      : "border-white/10 bg-white/[0.04] text-gray-300 hover:bg-white/[0.08] hover:text-white"
+                      ? "bg-red-500/15 text-red-300 hover:bg-red-500/25"
+                      : "text-gray-400 hover:bg-white/[0.08] hover:text-white"
                   }`}
                 >
-                  {isListening ? "■" : "🎙"}
+                  {isListening ? (
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className="h-5 w-5"
+                    >
+                      <rect
+                        x="7"
+                        y="7"
+                        width="10"
+                        height="10"
+                        rx="2"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className="h-5 w-5"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect
+                        x="9"
+                        y="3"
+                        width="6"
+                        height="12"
+                        rx="3"
+                      />
+
+                      <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 18v3m-4 0h8" />
+                    </svg>
+                  )}
                 </button>
 
                 {/* Send */}
@@ -540,9 +590,22 @@ function ChatScreen({
                   type="button"
                   onClick={handleSendMessage}
                   disabled={!message.trim() || isTyping}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 text-lg font-bold shadow-[0_0_20px_rgba(99,102,241,0.25)] transition-all duration-200 hover:scale-105 hover:shadow-[0_0_25px_rgba(99,102,241,0.35)] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:scale-100"
+                  aria-label="Send message"
+                  title="Send message"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-slate-900 transition-colors duration-200 hover:bg-slate-200 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500"
                 >
-                  →
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="h-5 w-5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 19V5m-7 7 7-7 7 7" />
+                  </svg>
                 </button>
 
               </div>

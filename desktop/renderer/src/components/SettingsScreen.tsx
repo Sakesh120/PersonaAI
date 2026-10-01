@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react"
 import PersonaLogo from "./PersonaLogo"
 
@@ -71,14 +70,14 @@ function SettingsScreen({
 
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <PersonaLogo />
+          <PersonaLogo size={52} />
 
-          <div>
-            <h1 className="text-lg font-bold">
+          <div className="flex flex-col justify-center">
+            <h1 className="text-base font-semibold leading-none tracking-wide">
               PersonaAI
             </h1>
 
-            <p className="text-[10px] tracking-widest text-gray-500">
+            <p className="mt-1 text-[9px] leading-none tracking-[0.18em] text-gray-500">
               PERSONAL AI
             </p>
           </div>

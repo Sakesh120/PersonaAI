@@ -1,3 +1,5 @@
+import { useRef, useState } from "react"
+
 import PersonaLogo from "./PersonaLogo"
 
 type DashboardProps = {
@@ -13,6 +15,45 @@ function Dashboard({
   onOpenFiles,
   onOpenTasks,
 }: DashboardProps) {
+  const [userName] = useState(() => {
+    return localStorage.getItem("personaAI_userName") || "User"
+  })
+
+  const [profileImage, setProfileImage] = useState(() => {
+    return localStorage.getItem("personaAI_profileImage") || ""
+  })
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const firstLetter = userName.trim().charAt(0).toUpperCase() || "U"
+
+  const handleProfileImage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0]
+
+    if (!file) return
+
+    if (!file.type.startsWith("image/")) {
+      return
+    }
+
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      const imageData = reader.result
+
+      if (typeof imageData === "string") {
+        setProfileImage(imageData)
+        localStorage.setItem("personaAI_profileImage", imageData)
+      }
+    }
+
+    reader.readAsDataURL(file)
+
+    event.target.value = ""
+  }
+
   return (
     <main className="min-h-screen bg-[#0B1220] text-slate-50">
 
@@ -24,21 +65,20 @@ function Dashboard({
 
       <aside className="fixed left-0 top-0 z-30 flex h-screen w-64 flex-col border-r border-[#263449] bg-[#111827]/95 p-5 backdrop-blur-xl">
 
-        {/* Logo */}
+        {/* PersonaAI Branding */}
         <div className="flex items-center gap-3">
-          <PersonaLogo size="sm" />
+          <PersonaLogo size={52} />
 
-          <div>
-            <h1 className="text-lg font-bold">
+          <div className="flex flex-col justify-center">
+            <h1 className="text-base font-semibold leading-none tracking-wide">
               PersonaAI
             </h1>
 
-            <p className="text-[10px] tracking-[0.2em] text-gray-500">
+            <p className="mt-1 text-[9px] leading-none tracking-[0.18em] text-gray-500">
               PERSONAL AI
             </p>
           </div>
         </div>
-
 
         {/* Navigation */}
         <nav className="mt-10 space-y-2">
@@ -57,7 +97,6 @@ function Dashboard({
             </span>
           </button>
 
-
           {/* AI Chat */}
           <button
             type="button"
@@ -72,7 +111,6 @@ function Dashboard({
               AI Chat
             </span>
           </button>
-
 
           {/* Files */}
           <button
@@ -89,7 +127,6 @@ function Dashboard({
             </span>
           </button>
 
-
           {/* Tasks */}
           <button
             type="button"
@@ -104,7 +141,6 @@ function Dashboard({
               Tasks
             </span>
           </button>
-
 
           {/* Settings */}
           <button
@@ -123,19 +159,32 @@ function Dashboard({
 
         </nav>
 
-
-        {/* Sidebar Bottom */}
+        {/* Sidebar User Profile */}
         <div className="mt-auto border-t border-[#263449] pt-5">
 
-          <div className="flex items-center gap-3 rounded-xl p-2">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            title="Change profile picture"
+            className="group flex w-full items-center gap-3 rounded-xl p-2 text-left transition hover:bg-white/[0.04]"
+          >
 
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-500 font-bold shadow-[0_0_20px_rgba(99,102,241,0.25)]">
-              U
-            </div>
+            {/* Profile Image */}
+            {profileImage ? (
+              <img
+                src={profileImage}
+                alt={`${userName} profile`}
+                className="h-10 w-10 shrink-0 rounded-full object-cover shadow-[0_0_20px_rgba(99,102,241,0.25)]"
+              />
+            ) : (
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 font-bold shadow-[0_0_20px_rgba(99,102,241,0.25)]">
+                {firstLetter}
+              </div>
+            )}
 
-            <div>
-              <p className="text-sm font-medium">
-                User
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">
+                {userName}
               </p>
 
               <p className="text-xs text-gray-500">
@@ -143,12 +192,20 @@ function Dashboard({
               </p>
             </div>
 
-          </div>
+          </button>
+
+          {/* Hidden Image Input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleProfileImage}
+            className="hidden"
+          />
 
         </div>
 
       </aside>
-
 
       {/* ================= MAIN ================= */}
       <section className="relative ml-64 min-h-screen p-8">
@@ -162,14 +219,13 @@ function Dashboard({
             </p>
 
             <h2 className="mt-1 text-3xl font-bold tracking-tight">
-              Good Morning, User
+              Good Morning, {userName}
             </h2>
 
             <p className="mt-2 text-gray-400">
               Your personal workspace is ready.
             </p>
           </div>
-
 
           <div className="flex items-center gap-3">
 
@@ -181,22 +237,35 @@ function Dashboard({
               🔔
             </button>
 
-
             {/* Profile */}
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-500 font-bold shadow-[0_0_20px_rgba(99,102,241,0.25)]">
-              U
-            </div>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              title="Change profile picture"
+              className="rounded-full"
+            >
+              {profileImage ? (
+                <img
+                  src={profileImage}
+                  alt={`${userName} profile`}
+                  className="h-11 w-11 rounded-full object-cover shadow-[0_0_20px_rgba(99,102,241,0.25)]"
+                />
+              ) : (
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 font-bold shadow-[0_0_20px_rgba(99,102,241,0.25)]">
+                  {firstLetter}
+                </div>
+              )}
+            </button>
 
           </div>
 
         </header>
 
-
         {/* ================= HERO ================= */}
-        <div className="relative mt-8 overflow-hidden rounded-3xl border border-[#263449] bg-linear-to-br from-[#111827] via-[#111827] to-[#162033] p-8 shadow-[0_15px_35px_rgba(15,23,42,0.22)]">
+        <div className="relative mt-8 overflow-hidden rounded-3xl border border-[#263449] bg-gradient-to-br from-[#111827] via-[#111827] to-[#162033] p-8 shadow-[0_15px_35px_rgba(15,23,42,0.22)]">
 
           {/* Decorative Glow */}
-          <div className="pointer-events-none absolute -right-20 -top-25 h-72 w-72 rounded-full bg-blue-500/10 blur-[100px]" />
+          <div className="pointer-events-none absolute right-[-80px] top-[-100px] h-72 w-72 rounded-full bg-blue-500/10 blur-[100px]" />
 
           <div className="relative flex items-center justify-between gap-8">
 
@@ -213,43 +282,142 @@ function Dashboard({
 
               </div>
 
-
               <h3 className="mt-5 text-3xl font-bold leading-tight md:text-4xl">
                 Your ideas.
                 <br />
-                <span className="bg-linear-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent">
                   Your productivity.
                 </span>
               </h3>
-
 
               <p className="mt-4 max-w-xl text-sm leading-6 text-gray-400">
                 PersonaAI gives you one focused workspace for conversations,
                 files, tasks, and everyday productivity.
               </p>
 
-
               {/* Chat CTA */}
               <button
                 type="button"
                 onClick={onOpenChat}
-                className="mt-7 rounded-xl bg-linear-to-r from-blue-500 to-purple-500 px-5 py-3 text-sm font-semibold shadow-[0_0_25px_rgba(99,102,241,0.25)] transition duration-200 hover:scale-[1.02]"
+                className="mt-7 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 px-5 py-3 text-sm font-semibold shadow-[0_0_25px_rgba(99,102,241,0.25)] transition duration-200 hover:scale-[1.02]"
               >
                 Start Conversation →
               </button>
 
             </div>
 
-
             {/* Logo */}
+         
             <div className="hidden pr-8 md:block">
-              <div className="flex h-36 w-36 items-center justify-center rounded-full border border-white/10 bg-white/3 shadow-[0_0_60px_rgba(59,130,246,0.12)]">
-                <PersonaLogo size="lg" />
-              </div>
-            </div>
+  <div className="relative flex h-36 w-36 items-center justify-center">
+
+    <div className="relative flex h-36 w-36 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] shadow-[0_0_60px_rgba(59,130,246,0.12)]">
+
+      {/* Rotating Neon Arcs */}
+      <svg
+        className="pointer-events-none absolute -inset-2 h-[calc(100%+16px)] w-[calc(100%+16px)]"
+        viewBox="0 0 144 144"
+        fill="none"
+      >
+        <defs>
+
+          {/* Main blue/cyan gradient */}
+          <linearGradient
+            id="personaArcBlue"
+            x1="25"
+            y1="20"
+            x2="120"
+            y2="100"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0" stopColor="#2563eb" stopOpacity="0.05" />
+            <stop offset="0.25" stopColor="#38bdf8" />
+            <stop offset="0.65" stopColor="#60a5fa" />
+            <stop offset="1" stopColor="#67e8f9" stopOpacity="0.05" />
+          </linearGradient>
+
+          {/* Second arc */}
+          <linearGradient
+            id="personaArcCyan"
+            x1="120"
+            y1="120"
+            x2="25"
+            y2="50"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0" stopColor="#2563eb" stopOpacity="0.05" />
+            <stop offset="0.3" stopColor="#38bdf8" />
+            <stop offset="0.7" stopColor="#22d3ee" />
+            <stop offset="1" stopColor="#60a5fa" stopOpacity="0.05" />
+          </linearGradient>
+
+          {/* Soft neon glow */}
+          <filter
+            id="personaArcGlow"
+            x="-100%"
+            y="-100%"
+            width="300%"
+            height="300%"
+          >
+            <feGaussianBlur
+              stdDeviation="3"
+              result="blur"
+            />
+
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+        </defs>
+
+        {/* This GROUP rotates continuously */}
+        <g
+          style={{
+            transformOrigin: "72px 72px",
+            animation: "personaArcRotate 6s linear infinite",
+          }}
+        >
+
+          {/* Upper arc */}
+          <circle
+            cx="72"
+            cy="72"
+            r="67"
+            fill="none"
+            stroke="url(#personaArcBlue)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeDasharray="145 276"
+            filter="url(#personaArcGlow)"
+          />
+
+          {/* Lower arc */}
+          <circle
+            cx="72"
+            cy="72"
+            r="67"
+            fill="none"
+            stroke="url(#personaArcCyan)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeDasharray="145 276"
+            strokeDashoffset="-210"
+            filter="url(#personaArcGlow)"
+          />
+
+        </g>
+      </svg>
+
+      {/* Your existing PersonaAI logo */}
+      <PersonaLogo size="lg" />
+
+    </div>
+  </div>
+</div>
 
           </div>
-
 
           {/* Search / Ask UI */}
           <div className="relative mt-8 flex items-center rounded-2xl border border-white/10 bg-[#080D1B]/80 p-2">
@@ -267,7 +435,7 @@ function Dashboard({
             <button
               type="button"
               onClick={onOpenChat}
-              className="flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-r from-blue-500 to-purple-500 font-bold shadow-[0_0_20px_rgba(99,102,241,0.35)] transition hover:scale-105"
+              className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 font-bold shadow-[0_0_20px_rgba(99,102,241,0.35)] transition hover:scale-105"
             >
               →
             </button>
@@ -275,7 +443,6 @@ function Dashboard({
           </div>
 
         </div>
-
 
         {/* ================= OVERVIEW ================= */}
         <div className="mt-8 grid gap-4 md:grid-cols-3">
@@ -307,7 +474,6 @@ function Dashboard({
             </p>
           </button>
 
-
           {/* Files */}
           <button
             type="button"
@@ -334,7 +500,6 @@ function Dashboard({
               Manage your workspace files
             </p>
           </button>
-
 
           {/* Tasks */}
           <button
@@ -365,7 +530,6 @@ function Dashboard({
 
         </div>
 
-
         {/* ================= QUICK ACTIONS ================= */}
         <div className="mt-9">
 
@@ -382,7 +546,6 @@ function Dashboard({
             </div>
 
           </div>
-
 
           <div className="mt-5 grid gap-4 md:grid-cols-3">
 
@@ -411,7 +574,6 @@ function Dashboard({
 
             </button>
 
-
             {/* Writing */}
             <button
               type="button"
@@ -436,7 +598,6 @@ function Dashboard({
               </span>
 
             </button>
-
 
             {/* Ask */}
             <button
@@ -467,7 +628,6 @@ function Dashboard({
 
         </div>
 
-
         {/* ================= RECENT ACTIVITY ================= */}
         <div className="mt-9 pb-8">
 
@@ -488,7 +648,6 @@ function Dashboard({
             </span>
 
           </div>
-
 
           <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-[#11182B]">
 
@@ -517,7 +676,6 @@ function Dashboard({
 
             </div>
 
-
             {/* Activity 2 */}
             <div className="flex items-center gap-4 border-b border-white/5 p-5">
 
@@ -542,7 +700,6 @@ function Dashboard({
               </span>
 
             </div>
-
 
             {/* Activity 3 */}
             <div className="flex items-center gap-4 p-5">
