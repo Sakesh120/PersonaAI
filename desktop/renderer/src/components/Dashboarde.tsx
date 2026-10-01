@@ -307,11 +307,115 @@ function Dashboard({
             </div>
 
             {/* Logo */}
+         
             <div className="hidden pr-8 md:block">
-              <div className="flex h-36 w-36 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] shadow-[0_0_60px_rgba(59,130,246,0.12)]">
-                <PersonaLogo size="lg" />
-              </div>
-            </div>
+  <div className="relative flex h-36 w-36 items-center justify-center">
+
+    <div className="relative flex h-36 w-36 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] shadow-[0_0_60px_rgba(59,130,246,0.12)]">
+
+      {/* Rotating Neon Arcs */}
+      <svg
+        className="pointer-events-none absolute -inset-2 h-[calc(100%+16px)] w-[calc(100%+16px)]"
+        viewBox="0 0 144 144"
+        fill="none"
+      >
+        <defs>
+
+          {/* Main blue/cyan gradient */}
+          <linearGradient
+            id="personaArcBlue"
+            x1="25"
+            y1="20"
+            x2="120"
+            y2="100"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0" stopColor="#2563eb" stopOpacity="0.05" />
+            <stop offset="0.25" stopColor="#38bdf8" />
+            <stop offset="0.65" stopColor="#60a5fa" />
+            <stop offset="1" stopColor="#67e8f9" stopOpacity="0.05" />
+          </linearGradient>
+
+          {/* Second arc */}
+          <linearGradient
+            id="personaArcCyan"
+            x1="120"
+            y1="120"
+            x2="25"
+            y2="50"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0" stopColor="#2563eb" stopOpacity="0.05" />
+            <stop offset="0.3" stopColor="#38bdf8" />
+            <stop offset="0.7" stopColor="#22d3ee" />
+            <stop offset="1" stopColor="#60a5fa" stopOpacity="0.05" />
+          </linearGradient>
+
+          {/* Soft neon glow */}
+          <filter
+            id="personaArcGlow"
+            x="-100%"
+            y="-100%"
+            width="300%"
+            height="300%"
+          >
+            <feGaussianBlur
+              stdDeviation="3"
+              result="blur"
+            />
+
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+        </defs>
+
+        {/* This GROUP rotates continuously */}
+        <g
+          style={{
+            transformOrigin: "72px 72px",
+            animation: "personaArcRotate 6s linear infinite",
+          }}
+        >
+
+          {/* Upper arc */}
+          <circle
+            cx="72"
+            cy="72"
+            r="67"
+            fill="none"
+            stroke="url(#personaArcBlue)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeDasharray="145 276"
+            filter="url(#personaArcGlow)"
+          />
+
+          {/* Lower arc */}
+          <circle
+            cx="72"
+            cy="72"
+            r="67"
+            fill="none"
+            stroke="url(#personaArcCyan)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeDasharray="145 276"
+            strokeDashoffset="-210"
+            filter="url(#personaArcGlow)"
+          />
+
+        </g>
+      </svg>
+
+      {/* Your existing PersonaAI logo */}
+      <PersonaLogo size="lg" />
+
+    </div>
+  </div>
+</div>
 
           </div>
 
