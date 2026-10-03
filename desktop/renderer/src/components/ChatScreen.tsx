@@ -377,20 +377,6 @@ function ChatScreen({
                 </div>
               ))}
 
-              {/* Standalone Typing Indicator (Fallback if Store hasn't created empty message yet) */}
-              {/* {isTyping && !messages.some(m => m.sender === "ai" && !m.text) && (
-                <div className="flex items-start gap-3">
-                  <PersonaLogo size="sm" />
-                  <div className="rounded-2xl rounded-tl-md border border-white/10 bg-[#10182B] px-5 py-4">
-                    <div className="flex items-center gap-1.5">
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-blue-400" />
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-blue-400 [animation-delay:150ms]" />
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-purple-400 [animation-delay:300ms]" />
-                    </div>
-                  </div>
-                </div>
-              )} */}
-
             </div>
           )}
         </div>
