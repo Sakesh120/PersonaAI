@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
-
+import SidebarUserProfile from "./SidebarUserProfile" // NEW (Code 2)
+import PersonaLogo from "./PersonaLogo"
 
 interface TasksScreenProps {
   onBackToDashboard: () => void
@@ -30,10 +31,44 @@ function TasksScreen({
     return []
   })
 
+  // NEW (Code 2): profile state
+  const [userName, setUserName] = useState(() => {
+    return localStorage.getItem("personaAI_userName") || "User"
+  })
+
+  const [profileImage, setProfileImage] = useState<string | null>(() => {
+    return localStorage.getItem("personaAI_profileImage") || null
+  })
+
   // Save tasks whenever tasks change
   useEffect(() => {
     localStorage.setItem("personaAI_tasks", JSON.stringify(tasks))
   }, [tasks])
+
+  // NEW (Code 2): Update profile name and image whenever profile is changed
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      setUserName(
+        localStorage.getItem("personaAI_userName") || "User"
+      )
+
+      setProfileImage(
+        localStorage.getItem("personaAI_profileImage") || null
+      )
+    }
+
+    window.addEventListener(
+      "personaAI-profile-updated",
+      handleProfileUpdate
+    )
+
+    return () => {
+      window.removeEventListener(
+        "personaAI-profile-updated",
+        handleProfileUpdate
+      )
+    }
+  }, [])
 
   const addTask = () => {
     if (task.trim() === "") return
@@ -67,14 +102,7 @@ function TasksScreen({
 
         {/* Logo */}
         <div className="flex items-center gap-3">
-
-          <div className="relative flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 shadow-[0_0_30px_rgba(59,130,246,0.45)]">
-            <span className="text-xl font-bold">
-              P
-            </span>
-
-            <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,0.8)]" />
-          </div>
+          <PersonaLogo size={52} />
 
           <div>
             <h1 className="text-lg font-bold tracking-wide">
@@ -169,33 +197,31 @@ function TasksScreen({
 
         </nav>
 
-        {/* Sidebar Bottom */}
-        <div className="absolute bottom-6 left-5 right-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        {/* NEW (Code 2): Sidebar User Profile (replaces static "Stay Organized" card) */}
+        <div className="absolute bottom-6 left-5 right-5">
+          <SidebarUserProfile
+            userName={userName}
+            profileImage={profileImage}
+            onOpenSettings={onOpenSettings}
+            onProfileImageChange={(image) => {
+              setProfileImage(image)
 
-          <div className="flex items-center gap-3">
+              localStorage.setItem(
+                "personaAI_profileImage",
+                image
+              )
 
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-400/10 text-purple-300">
-              ✦
-            </div>
-
-            <div>
-              <p className="text-xs font-medium text-gray-300">
-                Stay Organized
-              </p>
-
-              <p className="mt-0.5 text-[10px] text-gray-600">
-                Keep your daily goals clear
-              </p>
-            </div>
-
-          </div>
-
+              window.dispatchEvent(
+                new Event("personaAI-profile-updated")
+              )
+            }}
+          />
         </div>
 
       </aside>
 
-      {/* Main Content */}
-      <section className="relative ml-64 min-h-screen p-8">
+      {/* Main Content (width + min-w-0 from Code 2) */}
+      <section className="relative ml-64 min-h-screen w-[calc(100%-16rem)] min-w-0 p-8">
 
         {/* Header */}
         <header className="flex items-start justify-between">
@@ -271,7 +297,7 @@ function TasksScreen({
                   }
                 }}
                 placeholder="Enter a new task..."
-                className="flex-1 rounded-xl border border-[#263449] bg-[#0F172A] px-4 py-3 text-sm text-slate-50 outline-none transition-all placeholder:text-slate-500 focus:border-sky-400/40 focus:ring-2 focus:ring-sky-500/10"
+                className="min-w-0 flex-1 rounded-xl border border-[#263449] bg-[#0F172A] px-4 py-3 text-sm text-slate-50 outline-none transition-all placeholder:text-slate-500 focus:border-sky-400/40 focus:ring-2 focus:ring-sky-500/10"
               />
 
               <button

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import PersonaLogo from "./PersonaLogo"
 
 interface SettingsScreenProps {
@@ -18,6 +18,11 @@ function SettingsScreen({
     return localStorage.getItem("personaAI_userName") || "User"
   })
 
+  // NEW (Code 2): profile image state
+  const [profileImage, setProfileImage] = useState<string | null>(() => {
+    return localStorage.getItem("personaAI_profileImage") || null
+  })
+
   const [notifications, setNotifications] = useState(() => {
     return localStorage.getItem("personaAI_notifications") !== "false"
   })
@@ -29,10 +34,23 @@ function SettingsScreen({
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(userName)
 
+  // NEW (Code 2): hidden file input reference
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   // Save user name
   useEffect(() => {
     localStorage.setItem("personaAI_userName", userName)
   }, [userName])
+
+  // NEW (Code 2): Save profile image
+  useEffect(() => {
+    if (profileImage) {
+      localStorage.setItem(
+        "personaAI_profileImage",
+        profileImage
+      )
+    }
+  }, [profileImage])
 
   // Save notifications setting
   useEffect(() => {
@@ -61,6 +79,58 @@ function SettingsScreen({
     setNameInput(trimmedName)
     setEditingName(false)
   }
+
+  // NEW (Code 2): change profile image
+  const handleProfileImageChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0]
+
+    if (!file) {
+      return
+    }
+
+    if (!file.type.startsWith("image/")) {
+      return
+    }
+
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      const result = reader.result
+
+      if (typeof result === "string") {
+        setProfileImage(result)
+
+        localStorage.setItem(
+          "personaAI_profileImage",
+          result
+        )
+
+        window.dispatchEvent(
+          new Event("personaAI-profile-updated")
+        )
+      }
+    }
+
+    reader.readAsDataURL(file)
+
+    event.target.value = ""
+  }
+
+  // NEW (Code 2): remove profile image
+  const handleRemoveProfileImage = () => {
+    setProfileImage(null)
+    localStorage.removeItem("personaAI_profileImage")
+
+    window.dispatchEvent(
+      new Event("personaAI-profile-updated")
+    )
+  }
+
+  // NEW (Code 2)
+  const firstLetter =
+    userName.trim().charAt(0).toUpperCase() || "U"
 
   return (
     <main className="min-h-screen bg-[#0B1020] text-white">
@@ -137,9 +207,18 @@ function SettingsScreen({
 
           <div className="flex items-center gap-3">
 
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-bold">
-              {userName.charAt(0).toUpperCase()}
-            </div>
+            {/* NEW (Code 2): profile image in sidebar */}
+            {profileImage ? (
+              <img
+                src={profileImage}
+                alt={`${userName} profile`}
+                className="h-9 w-9 shrink-0 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-bold">
+                {firstLetter}
+              </div>
+            )}
 
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">
@@ -157,8 +236,8 @@ function SettingsScreen({
 
       </aside>
 
-      {/* Main Content */}
-      <section className="relative ml-64 min-h-screen p-8">
+      {/* Main Content (width from Code 2) */}
+      <section className="relative ml-64 min-h-screen w-[calc(100%-16rem)] p-8">
 
         {/* Header */}
         <header className="flex items-center justify-between">
@@ -201,7 +280,78 @@ function SettingsScreen({
               Manage your personal account information.
             </p>
 
-            <div className="mt-5 rounded-xl border border-[#263449] bg-[#0F172A] p-4">
+            {/* NEW (Code 2): Profile Photo */}
+            <div className="mt-5 rounded-xl border border-[#263449] bg-[#0F172A] p-5">
+
+              <div className="flex items-center gap-5">
+
+                {/* Profile Image */}
+                {profileImage ? (
+                  <img
+                    src={profileImage}
+                    alt={`${userName} profile`}
+                    className="h-20 w-20 shrink-0 rounded-full border-2 border-white/10 object-cover"
+                  />
+                ) : (
+                  <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-2xl font-bold">
+                    {firstLetter}
+                  </div>
+                )}
+
+                {/* Profile Info */}
+                <div className="min-w-0 flex-1">
+
+                  <p className="text-sm text-gray-400">
+                    Profile Photo
+                  </p>
+
+                  <p className="mt-1 text-sm text-gray-500">
+                    Add a profile picture to personalize your account.
+                  </p>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        fileInputRef.current?.click()
+                      }
+                      className="rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium transition hover:bg-[#1D4ED8]"
+                    >
+                      {profileImage
+                        ? "Change Photo"
+                        : "Add Photo"}
+                    </button>
+
+                    {profileImage && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveProfileImage}
+                        className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
+                      >
+                        Remove
+                      </button>
+                    )}
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* Hidden File Input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleProfileImageChange}
+                className="hidden"
+              />
+
+            </div>
+
+            {/* Name */}
+            <div className="mt-4 rounded-xl border border-[#263449] bg-[#0F172A] p-4">
 
               <div className="flex items-center justify-between">
 

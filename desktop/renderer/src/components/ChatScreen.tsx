@@ -3,10 +3,12 @@ import {
   clearChatMessages,
   getChatSnapshot,
   sendChatMessage,
+  stopChatResponse, // NEW (Code 2 feature) - chat-store mein add karna hai
   subscribeToChat,
 } from "../chat-store"
 
 import PersonaLogo from "./PersonaLogo"
+import SidebarUserProfile from "./SidebarUserProfile" // NEW (Code 2)
 
 type SpeechRecognitionResultEvent = {
   results: {
@@ -46,7 +48,7 @@ function ChatScreen({
   const [isListening, setIsListening] = useState(false)
   const [voiceError, setVoiceError] = useState("")
 
-  // Persist conversation ID (from Code 1)
+  // Persist conversation ID
   const [conversationId, setConversationId] = useState(() => {
     const savedId = localStorage.getItem("personaAI_conversationId")
     if (savedId) return savedId
@@ -56,7 +58,7 @@ function ChatScreen({
     return newId
   })
 
-  // External store subscription for streaming (from Code 2)
+  // External store subscription for streaming
   const { messages, isTyping, hasStartedStreaming } = useSyncExternalStore(
     subscribeToChat,
     getChatSnapshot,
@@ -65,7 +67,10 @@ function ChatScreen({
 
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
 
-  // Persist messages to local storage as backup (from Code 1)
+  // NEW (Code 2): input reference for auto-focus
+  const inputRef = useRef<HTMLInputElement | null>(null)
+
+  // Persist messages to local storage as backup
   useEffect(() => {
     if (messages.length > 0) {
       localStorage.setItem("personaAI_chat", JSON.stringify(messages))
@@ -78,6 +83,15 @@ function ChatScreen({
     }
   }, [])
 
+  // NEW (Code 2): response khatam hone par input pe focus
+  useEffect(() => {
+    if (!isTyping) {
+      requestAnimationFrame(() => {
+        inputRef.current?.focus()
+      })
+    }
+  }, [isTyping])
+
   const handleSendMessage = async () => {
     const trimmedMessage = message.trim()
 
@@ -86,8 +100,16 @@ function ChatScreen({
     }
 
     setMessage("")
-    // Send message using store but passing conversationId
     void sendChatMessage(trimmedMessage, conversationId)
+  }
+
+  // NEW (Code 2): stop response
+  const handleStopResponse = () => {
+    stopChatResponse()
+
+    requestAnimationFrame(() => {
+      inputRef.current?.focus()
+    })
   }
 
   const handleClearChat = () => {
@@ -99,19 +121,18 @@ function ChatScreen({
       return
     }
 
-    // Code 1: Wipe local storage & generate new conversation ID
-    localStorage.removeItem("personaAI_chat")
+    // Wipe local storage & generate new conversation ID
     const newConversationId = crypto.randomUUID()
     setConversationId(newConversationId)
     localStorage.setItem("personaAI_conversationId", newConversationId)
 
-    // Code 2: Clear store and inject welcome message
-    const welcomeMessage = {
-      id: Date.now(),
-      sender: "ai" as const,
-      text: "Chat cleared successfully. 👋 How can I help you?",
-    }
-    clearChatMessages(welcomeMessage)
+    clearChatMessages()
+
+    // NEW (Code 2): clear ke baad input reset + focus
+    setMessage("")
+    requestAnimationFrame(() => {
+      inputRef.current?.focus()
+    })
   }
 
   const handleKeyDown = (
@@ -186,8 +207,8 @@ function ChatScreen({
         <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-cyan-500/5 blur-3xl" />
       </div>
 
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-30 h-screen w-64 border-r border-[#263449] bg-[#111827]/95 p-5 backdrop-blur-xl">
+      {/* Sidebar (flex-col added so profile can sit at the bottom) */}
+      <aside className="fixed left-0 top-0 z-30 flex h-screen w-64 flex-col border-r border-[#263449] bg-[#111827]/95 p-5 backdrop-blur-xl">
 
         {/* Logo */}
         <div className="flex items-center gap-3">
@@ -198,8 +219,8 @@ function ChatScreen({
               PersonaAI
             </h1>
 
-            <p className="mt-1 text-[12px] leading-none tracking-[0.2em] text-gray-500">
-              PERSONAL AI
+            <p className="mt-1 text-[10px] leading-none tracking-[0.2em] text-gray-500">
+              Offline Personal Inteligence Platform
             </p>
           </div>
         </div>
@@ -254,23 +275,23 @@ function ChatScreen({
 
         </nav>
 
-        {/* Sidebar Bottom */}
-        <div className="absolute bottom-6 left-5 right-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-400/10 text-blue-300">
-              ✦
-            </div>
-            <div>
-              <p className="text-xs font-medium text-gray-300">PersonaAI</p>
-              <p className="mt-0.5 text-[10px] text-gray-600">Your personal assistant</p>
-            </div>
-          </div>
+        {/* NEW (Code 2): Sidebar User Profile (replaces static bottom card) */}
+        <div className="mt-auto border-t border-[#263449] pt-4">
+          <SidebarUserProfile
+            userName={localStorage.getItem("personaAI_userName") || "User"}
+            profileImage={localStorage.getItem("personaAI_profileImage") || null}
+            onOpenSettings={onOpenSettings}
+            onProfileImageChange={(image) => {
+              localStorage.setItem("personaAI_profileImage", image)
+              window.dispatchEvent(new Event("personaAI-profile-updated"))
+            }}
+          />
         </div>
 
       </aside>
 
-      {/* Main Chat Area */}
-      <section className="relative ml-64 flex h-screen flex-col">
+      {/* Main Chat Area (min-w-0 + width from Code 2) */}
+      <section className="relative ml-64 flex h-screen w-[calc(100%-16rem)] min-w-0 flex-col">
 
         {/* Header */}
         <header className="flex shrink-0 items-center justify-between border-b border-[#263449] bg-[#0F172A]/80 px-8 py-5 backdrop-blur-xl">
@@ -308,15 +329,14 @@ function ChatScreen({
 
         </header>
 
-        {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto px-8 py-8">
+        {/* Messages Container (min-h-0 added from Code 2 for proper scrolling) */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-8 py-8">
 
           {messages.length === 0 && !isTyping ? (
-            /* Empty Chat Welcome (From Code 1) */
             <div className="flex h-full items-center justify-center">
               <div className="text-center">
                 <h1 className="text-3xl font-semibold tracking-tight text-slate-100">
-                  Hello, How can I help you?
+                  Hello, how can I help you?
                 </h1>
                 <p className="mt-3 text-sm text-slate-500">
                   Start a conversation with PersonaAI
@@ -351,7 +371,7 @@ function ChatScreen({
                         : "max-w-xl rounded-2xl rounded-tl-md border border-[#263449] bg-[#111827] px-5 py-4 shadow-[0_10px_22px_rgba(15,23,42,0.18)]"
                     }
                   >
-                    {/* Inline Typing Indicator (From Code 2) */}
+                    {/* Inline Typing Indicator */}
                     {chatMessage.sender === "ai" &&
                     !chatMessage.text &&
                     isTyping &&
@@ -390,8 +410,9 @@ function ChatScreen({
 
               <div className="flex items-center gap-2">
 
-                {/* Input */}
+                {/* Input (ref added from Code 2) */}
                 <input
+                  ref={inputRef}
                   type="text"
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
@@ -400,7 +421,7 @@ function ChatScreen({
                   className="flex-1 bg-transparent px-4 py-3 text-sm text-slate-50 outline-none placeholder:text-slate-500"
                 />
 
-                {/* Microphone (Uses Code 2 Styles + Code 1 SVGs) */}
+                {/* Microphone */}
                 <button
                   type="button"
                   onClick={handleMicrophone}
@@ -424,19 +445,33 @@ function ChatScreen({
                   )}
                 </button>
 
-                {/* Send (Uses Code 2 Styles + Code 1 SVG) */}
-                <button
-                  type="button"
-                  onClick={handleSendMessage}
-                  disabled={!message.trim() || isTyping}
-                  aria-label="Send message"
-                  title="Send message"
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.25)] transition-all duration-200 hover:scale-105 hover:shadow-[0_0_25px_rgba(99,102,241,0.35)] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:scale-100"
-                >
-                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 19V5m-7 7 7-7 7 7" />
-                  </svg>
-                </button>
+                {/* Send / Stop (Stop button NEW from Code 2, Send is Code 1) */}
+                {isTyping ? (
+                  <button
+                    type="button"
+                    onClick={handleStopResponse}
+                    aria-label="Stop response"
+                    title="Stop response"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-500 text-white transition-all duration-200 hover:bg-red-600"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+                      <rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor" />
+                    </svg>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSendMessage}
+                    disabled={!message.trim()}
+                    aria-label="Send message"
+                    title="Send message"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.25)] transition-all duration-200 hover:scale-105 hover:shadow-[0_0_25px_rgba(99,102,241,0.35)] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:scale-100"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 19V5m-7 7 7-7 7 7" />
+                    </svg>
+                  </button>
+                )}
 
               </div>
 
