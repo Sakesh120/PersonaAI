@@ -54,23 +54,7 @@ function initialMessages(): ChatMessage[] {
     }
   }
 
-  return [
-    {
-      id: 1,
-      sender: "ai",
-      text: "Hello! 👋 I'm PersonaAI. How can I help you today?",
-    },
-    {
-      id: 2,
-      sender: "user",
-      text: "Tell me what you can do.",
-    },
-    {
-      id: 3,
-      sender: "ai",
-      text: "I can help you answer questions, write content, solve problems, organize tasks, and have conversations with you.",
-    },
-  ]
+  return []
 }
 
 let snapshot: ChatSnapshot = {
@@ -226,12 +210,29 @@ export async function sendChatMessage(message: string, conversationId: string): 
   }
 }
 
-export function clearChatMessages(welcomeMessage: ChatMessage): void {
+export function stopChatResponse(): void {
+  if (!activeRequest) {
+    return
+  }
+
+  const controller = activeRequest
+  activeRequest = null
+  pendingAssistantMessageId = null
+  controller.abort()
+
+  publish({
+    ...snapshot,
+    isTyping: false,
+    hasStartedStreaming: false,
+  })
+}
+
+export function clearChatMessages(): void {
   activeRequest?.abort()
   activeRequest = null
   pendingAssistantMessageId = null
   publish({
-    messages: [welcomeMessage],
+    messages: [],
     isTyping: false,
     hasStartedStreaming: false,
   })

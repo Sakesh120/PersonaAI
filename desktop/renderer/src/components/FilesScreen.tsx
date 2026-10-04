@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import PersonaLogo from "./PersonaLogo"
+import SidebarUserProfile from "./SidebarUserProfile" // NEW (Code 2)
 import { listDocuments, uploadDocument } from "../services/api"
 
 interface SavedFile {
@@ -31,6 +32,16 @@ function FilesScreen({
   const [files, setFiles] = useState<SavedFile[]>([])
   const [loading, setLoading] = useState(true)
   const [serviceError, setServiceError] = useState("")
+
+  // NEW (Code 2): profile state
+  const [userName, setUserName] = useState(() => {
+    return localStorage.getItem("personaAI_userName") || "User"
+  })
+
+  const [profileImage, setProfileImage] = useState<string | null>(() => {
+    return localStorage.getItem("personaAI_profileImage") || null
+  })
+
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load saved files
@@ -71,6 +82,20 @@ function FilesScreen({
     }
 
     loadFiles()
+  }, [])
+
+  // NEW (Code 2): Listen for profile updates
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      setUserName(localStorage.getItem("personaAI_userName") || "User")
+      setProfileImage(localStorage.getItem("personaAI_profileImage") || null)
+    }
+
+    window.addEventListener("personaAI-profile-updated", handleProfileUpdate)
+
+    return () => {
+      window.removeEventListener("personaAI-profile-updated", handleProfileUpdate)
+    }
   }, [])
 
   // Choose file
@@ -355,31 +380,28 @@ function FilesScreen({
 
         </nav>
 
-        {/* Sidebar Bottom */}
-        <div className="absolute bottom-6 left-5 right-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-          <div className="flex items-center gap-3">
+        {/* NEW (Code 2): User Profile (replaces static "Offline Mode" card) */}
+        <div className="absolute bottom-5 left-5 right-5 border-t border-[#263449] pt-4">
 
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-400/10 text-cyan-300">
-              ✦
-            </div>
+          <SidebarUserProfile
+            userName={userName}
+            profileImage={profileImage}
+            onOpenSettings={onOpenSettings}
+            onProfileImageChange={(image) => {
+              setProfileImage(image)
 
-            <div>
-              <p className="text-xs font-medium text-gray-300">
-                Offline Mode
-              </p>
+              localStorage.setItem("personaAI_profileImage", image)
 
-              <p className="mt-0.5 text-[10px] text-gray-600">
-                Your files stay private
-              </p>
-            </div>
+              window.dispatchEvent(new Event("personaAI-profile-updated"))
+            }}
+          />
 
-          </div>
         </div>
 
       </aside>
 
-      {/* Main Content */}
-      <section className="relative ml-64 min-h-screen p-8">
+      {/* Main Content (width from Code 2) */}
+      <section className="relative ml-64 min-h-screen w-[calc(100%-16rem)] p-8">
 
         {/* Header */}
         <header className="flex items-start justify-between">

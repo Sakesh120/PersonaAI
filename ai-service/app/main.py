@@ -79,18 +79,7 @@ def chat(request: ChatRequest) -> ChatResponse:  # plain def: runs in a thread p
         raise HTTPException(status_code=400, detail="message is required")
 
     conversation_id = request.conversationId or "default"
-
-    # Caller-supplied history wins; otherwise use what we stored for this conversationId.
-    if request.messages is not None:
-        history = [m.model_dump() for m in request.messages]
-    else:
-        history = _histories.get(conversation_id, [])
-
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        *history,
-        {"role": "user", "content": request.message},
-    ]
+    history, messages = _build_messages(request, conversation_id)
 
     try:
         result = chat_ollama(messages, think=request.think)
